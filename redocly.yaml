@@ -1,0 +1,15 @@
+# Redocly CLI configuration: `npx @redocly/cli lint` lints both API descriptions.
+apis:
+  sport-line@v1:
+    root: openapi/sport-line-api.yaml
+  coupon@v1:
+    root: openapi/coupon-api.yaml
+
+extends:
+  - recommended
+
+rules:
+  # Sport Line API errors are described by `error_code` / `error_message`; the documentation does
+  # not define their HTTP status codes, so they are modelled as the `default` response instead of
+  # an invented 4XX code. The Coupon API health check documents no 4XX responses either.
+  operation-4xx-response: off

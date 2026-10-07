@@ -1,0 +1,1804 @@
+# SportAPI Coupon API (bet placement and settlement) — OpenAPI 3.0.3 description.
+# Written from the public documentation: https://sportapi.net/docs/coupon/getting-started/overview.html
+# This file is MIT-licensed. Access to the API itself requires a SportAPI subscription: https://sportapi.net
+openapi: 3.0.3
+info:
+  title: SportAPI Coupon API
+  version: 0.1.0
+  description: |
+    OpenAPI 3.0 description of the **SportAPI Coupon API** (bet placement and settlement): submit bets selected
+    in your sportsbook to the SportAPI Coupon Settlement System, receive confirmation, and get settlement
+    results by polling or by signed callbacks.
+
+    Written from the public [SportAPI documentation](https://sportapi.net/docs/coupon/getting-started/overview.html). It covers the
+    recommended `/api/partner/**` methods and the result callback. Legacy routes (`/api/v2/login`,
+    `/bet/place`, `/coupons/*`, `/api/v3/partner/bet/*`) and the experimental cashout are intentionally left
+    out — see [Compatible Legacy Routes](https://sportapi.net/docs/coupon/reference/legacy-api.html) and [Cashout](https://sportapi.net/docs/coupon/coupons/cashout.html).
+
+    ## Flow
+
+    ```text
+    POST /api/partner/login          → client JWT
+    POST /api/partner/coupons/place  → coupons (store coupon_code as a string)
+    callback or polling              → settlement result (use real_win)
+    ```
+
+    Bet pointers come from the [Sport Line API](https://sportapi.net/docs/sport-line/data-models/odds.html) selection you show to the
+    user — see [Bet Pointer](https://sportapi.net/docs/coupon/bet-placement/bet-pointer.html).
+
+    ## Access
+
+    The manager provides the base URL (set it as the `baseUrl` server variable), a username and a password,
+    and — if callbacks are enabled — a `callback_secret`. The placeholder `https://coupon-api.example.com`
+    is only an example. Keep credentials, the JWT and the secret on the server side.
+
+    ## Checking the result
+
+    | HTTP | `code` | Meaning |
+    |---|---|---|
+    | 2xx | `1` | Success — parse `body` according to the method |
+    | 2xx | `0` | Business error — handle `error_code` (and `body.changes` for `501`–`504`) |
+    | 400 | — | Invalid JSON or parameter type |
+    | 401 | — | JWT missing, invalid, expired or revoked — sign in again |
+    | 403 | — | Token lacks the client role or access is denied |
+    | 5xx | — | Server error — never retry coupon placement blindly |
+
+    All dates are Unix timestamps in **milliseconds**. Amounts, odds and payouts are decimal numbers without a
+    fixed number of decimal places — use a decimal type for money. See
+    [Common Conventions](https://sportapi.net/docs/coupon/getting-started/common-conventions.html) and [Error Codes](https://sportapi.net/docs/coupon/reference/error-codes.html).
+
+    ## Get access
+
+    The data API is a commercial service: plans start from $30/month, with a free 2-day trial.
+    Contact the [SportAPI manager on Telegram](https://t.me/sportapinet_bot?start=github_sportapi_openapi) or visit [sportapi.net](https://sportapi.net/sport-events-api.html).
+  contact:
+    name: SportAPI
+    url: https://sportapi.net
+  license:
+    name: MIT (this specification document)
+    url: https://opensource.org/licenses/MIT
+externalDocs:
+  description: SportAPI documentation — Coupon API Quick Integration
+  url: https://sportapi.net/docs/coupon/quick-integration.html
+servers:
+  - url: '{baseUrl}'
+    description: Client API base URL issued by the SportAPI manager (test or production).
+    variables:
+      baseUrl:
+        default: https://coupon-api.example.com
+        description: Your Coupon API base URL, without a trailing slash. The default is the documentation
+          placeholder.
+security:
+  - ClientJWT: []
+tags:
+  - name: Service
+    description: Availability check and authentication.
+  - name: Bet placement
+    description: Coupon placement and the settlement callback.
+    externalDocs:
+      description: Coupon Placement
+      url: https://sportapi.net/docs/coupon/bet-placement/place-coupon.html
+  - name: Coupons
+    description: Reading coupons and settlement results.
+    externalDocs:
+      description: Coupon and Bet Model
+      url: https://sportapi.net/docs/coupon/coupons/coupon-model.html
+  - name: Account
+    description: The client account balance in the Coupon Settlement System.
+paths:
+  /api/partner/health:
+    get:
+      tags:
+        - Service
+      summary: Check API availability
+      description: Checks HTTP availability of the API. It does not confirm that credentials, a JWT or
+        any coupon data are valid. No authorization required.
+      operationId: getHealth
+      security: []
+      externalDocs:
+        description: Endpoint Reference
+        url: https://sportapi.net/docs/coupon/reference/endpoints.html
+      responses:
+        '200':
+          description: The API is available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                ok:
+                  summary: Available
+                  value:
+                    code: 1
+                    body: ok
+                    error_code: null
+                    error_message: null
+                    date: 1784970000000
+                    time_ms: 1
+                    path: /api/partner/health
+        5XX:
+          $ref: '#/components/responses/ServerError'
+  /api/partner/login:
+    post:
+      tags:
+        - Service
+      summary: Obtain a client JWT
+      description: |-
+        Exchanges the partner username and password for a client JWT. Reuse the token until the API returns HTTP 401; there is no refresh method.
+
+        Login business errors are returned with HTTP 200 and `code = 0`:
+
+        | `error_code` | `error_message` | Meaning |
+        |---|---|---|
+        | `1002` | `Not all params` | Username or password not provided |
+        | `1003` | `Wrong login or password` | Unknown username or wrong password (not distinguished) |
+        | `1004` | `Client account is disabled` | Contact the manager |
+        | `1006` | `Client access has expired` | Contact the manager |
+        | `1007` | `Insufficient balance` | The client balance is zero or negative |
+
+        Keep credentials and the JWT on the server side only.
+      operationId: login
+      security: []
+      externalDocs:
+        description: Authentication
+        url: https://sportapi.net/docs/coupon/getting-started/authentication.html
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              login:
+                summary: Username and password
+                value:
+                  username: partner-demo
+                  password: strong-password
+      responses:
+        '200':
+          description: Token issued (`code = 1`) or a login business error (`code = 0`).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/LoginResponse'
+                  - $ref: '#/components/schemas/BusinessError'
+              examples:
+                success:
+                  summary: Token issued
+                  value:
+                    code: 1
+                    body:
+                      token: eyJhbGciOiJIUzI1NiJ9...
+                      username: partner-demo
+                    error_code: null
+                    error_message: null
+                    date: 1784970000000
+                    time_ms: 35
+                    path: /api/partner/login
+                wrongCredentials:
+                  summary: Wrong login or password
+                  value:
+                    code: 0
+                    body: null
+                    error_code: 1003
+                    error_message: Wrong login or password
+                    date: 1784970000000
+                    time_ms: 5
+                    path: /api/partner/login
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        5XX:
+          $ref: '#/components/responses/ServerError'
+  /api/partner/coupons/place:
+    post:
+      tags:
+        - Bet placement
+      summary: Place a coupon (single, accumulator or several singles)
+      description: |-
+        Validates every bet pointer against the current sports line and atomically creates one or more coupons, debiting the SportAPI client balance (not the end user's balance).
+
+        - `multi = false` (default): all pointers form one single or accumulator; one `amount` is debited.
+        - `multi = true`: one single per pointer; `amount × number of pointers` is debited.
+        - Insufficient balance returns `507`: no coupon is created and the balance is unchanged.
+
+        A coupon is accepted **only** when `code = 1`: store `body.coupons[]` (always an array) and keep `coupon_code` as a string. Until then the bet slip is only the user's preliminary selection.
+
+        | `error_code` | Cause |
+        |---|---|
+        | `10` | Request body not provided |
+        | `11` | Invalid bet pointer format |
+        | `12` | `amount` missing or not positive |
+        | `501` | Odds changed and the mode does not allow it (`body.changes`) |
+        | `502` | Outcome absent from the current line (`body.changes`) |
+        | `503` | Outcome blocked (`body.changes`) |
+        | `504` | Outcome validation error (`body.changes`) |
+        | `506` | Accumulator combines bets from the same match or its sub-events |
+        | `507` | Insufficient client balance for all coupons |
+        | `1002` | Invalid parameter set |
+        | `10000` | Internal service error |
+
+        Business codes `502`–`504` are not HTTP statuses. **Never retry this request blindly** after a network or server error — first make sure the original request was not processed, or a duplicate coupon may be created.
+
+        If callbacks are enabled for the account and `callback_url` is set, settlement snapshots are sent to that URL (see the `couponsSettled` callback).
+      operationId: placeCoupon
+      externalDocs:
+        description: Coupon Placement
+        url: https://sportapi.net/docs/coupon/bet-placement/place-coupon.html
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceCouponRequest'
+            examples:
+              single:
+                summary: Single with safe defaults
+                value:
+                  list_bets:
+                    - line#737779544#1#1#0#1.85
+                  amount: 10
+                  currency: USD
+                  callback_url: https://partner.example.com/api/coupon-result
+                  lang: en
+                  mode: reject
+                  multi: false
+              accumulator:
+                summary: Accumulator of two bets
+                value:
+                  list_bets:
+                    - line#737779544#1#1#0#1.85
+                    - line#737880112#8#6#2.5#1.64
+                  amount: 10
+                  currency: USD
+                  multi: false
+              multiSingles:
+                summary: Two separate singles (multi = true, total debit 20)
+                value:
+                  list_bets:
+                    - line#737779544#1#1#0#1.85
+                    - line#737880112#8#6#2.5#1.64
+                  amount: 10
+                  multi: true
+              acceptHigherOdds:
+                summary: Accept odds increases only
+                value:
+                  list_bets:
+                    - live#738917381#119#5869#0.5#3.6#149439538
+                  amount: 10
+                  mode: accept
+                  mode_type: 1
+      responses:
+        '200':
+          description: Coupons created (`code = 1`) or a business error (`code = 0`).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/PlaceCouponResponse'
+                  - $ref: '#/components/schemas/BusinessError'
+              examples:
+                single:
+                  summary: Single created
+                  value:
+                    code: 1
+                    body:
+                      coupons:
+                        - coupon_code: '000000000272'
+                          amount: 10
+                          win: 18.5
+                          potential_win: 18.5
+                          real_win: null
+                          coef: 1.85
+                          original_coef: 1.85
+                          calculate_coef: null
+                          has_return: false
+                          date: 1784970000000
+                          status: 0
+                          asian: false
+                          calculate_date: null
+                          coupon_type: 1
+                          events_count: 1
+                          events_data:
+                            - id: 84521
+                              game_id: 737779544
+                              main_game_id: 737779544
+                              is_sub_game: false
+                              parent_game_id: null
+                              sub_game_key: null
+                              raw_pointer: line#737779544#1#1#0#1.85
+                              line_type: line
+                              is_live: false
+                              bet_group_id: 1
+                              bet_group_name: Match Result
+                              bet_id: 1
+                              bet_name: First Team to Win
+                              sport_id: 1
+                              sport_name: Football
+                              tournament_id: 10001
+                              tournament: National League
+                              event_date: 1784971800000
+                              status: 0
+                              opp1: Team A
+                              opp2: Team B
+                              coef: 1.85
+                              calc_coef: null
+                              bet_score: line#737779544#1#1#0#1.85
+                              calculate_date: null
+                              calculate_score: null
+                              settlement_reason_code: null
+                              settlement_reason: null
+                              placement_score_full: null
+                              placement_score_periods: null
+                              calculation_score_full: null
+                              calculation_score_periods: null
+                              timer: null
+                              dop_name: null
+                              rate: '0'
+                              sgame_id: null
+                              game_num: null
+                              stat_id: null
+                              team1_id: 101
+                              team2_id: 102
+                              opp_icon1: 101
+                              opp_icon2: 102
+                    error_code: null
+                    error_message: null
+                    date: 1784970000015
+                    time_ms: 45
+                    path: /api/partner/coupons/place
+                oddsDecreased:
+                  summary: 501 — odds decreased
+                  value:
+                    code: 0
+                    body:
+                      changes:
+                        - game_id: 737779544
+                          bet_coefficient: 2.19
+                          actual_coefficient: 2.09
+                          change_type: 2
+                          status: rejected
+                    error_code: 501
+                    error_message: Coefficient is change
+                    date: 1784970000000
+                    time_ms: 20
+                    path: /api/partner/coupons/place
+                oddsIncreased:
+                  summary: 501 — odds increased
+                  value:
+                    code: 0
+                    body:
+                      changes:
+                        - game_id: 737779544
+                          bet_coefficient: 2.19
+                          actual_coefficient: 2.39
+                          change_type: 1
+                          status: rejected
+                    error_code: 501
+                    error_message: Coefficient is change
+                    date: 1784970000000
+                    time_ms: 20
+                    path: /api/partner/coupons/place
+                outcomeUnavailable:
+                  summary: 502 — outcome not available
+                  value:
+                    code: 0
+                    body:
+                      changes:
+                        - game_id: 737779544
+                          bet_coefficient: 2.19
+                          actual_coefficient: null
+                          change_type: null
+                          status: no_data
+                    error_code: 502
+                    error_message: Bet outcome is not available
+                    date: 1784970000000
+                    time_ms: 20
+                    path: /api/partner/coupons/place
+                outcomeBlocked:
+                  summary: 503 — outcome blocked
+                  value:
+                    code: 0
+                    body:
+                      changes:
+                        - game_id: 737779544
+                          bet_coefficient: 2.19
+                          actual_coefficient: null
+                          change_type: null
+                          status: block
+                    error_code: 503
+                    error_message: Bet outcome is blocked
+                    date: 1784970000000
+                    time_ms: 20
+                    path: /api/partner/coupons/place
+                insufficientBalance:
+                  summary: 507 — insufficient balance
+                  value:
+                    code: 0
+                    error_code: 507
+                    error_message: Insufficient balance
+                    date: 1753000000000
+                    time_ms: 5
+                    path: /api/partner/coupons/place
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        5XX:
+          $ref: '#/components/responses/ServerError'
+      callbacks:
+        couponsSettled:
+          '{$request.body#/callback_url}':
+            post:
+              summary: Settlement snapshot sent to the partner
+              description: |-
+                Sent by the SportAPI Coupon Settlement System to the partner's `callback_url` after a settlement change — final settlement of a single, every newly settled bet of an accumulator, the first losing bet, the final accumulator state, a return for recalculation and the new result after it. One request carries up to 100 coupon snapshots for one account and one `callback_url`.
+
+                Callbacks are optional: the manager enables them and issues a `callback_secret`.
+
+                **Signature.** `X-Coupon-Signature: sha256=<lowercase hex HMAC-SHA256(callback_secret, raw body)>`. Verify it on the exact request bytes before parsing, using a constant-time comparison. No JWT is sent.
+
+                **Delivery.** Only HTTP 200 is a successful acknowledgement (201/202/204 are not). Timeouts, transport errors and HTTP 500/502/503/504 are retried: immediately, then after 1, 5, 15 and 60 minutes — at most five attempts. The whole request has 10 seconds. HTTP 401 (bad signature), 403 (IP filter) and any other status are final.
+
+                See [Result Callbacks](https://sportapi.net/docs/coupon/settlement/callbacks.html), [Callback Signature](https://sportapi.net/docs/coupon/settlement/callback-signature.html) and [Retries and Idempotency](https://sportapi.net/docs/coupon/settlement/retries-and-idempotency.html).
+              operationId: couponsSettledCallback
+              security: []
+              parameters:
+                - name: X-Coupon-Signature
+                  in: header
+                  required: true
+                  description: '`sha256=` followed by the lowercase hexadecimal HMAC-SHA256 of the raw
+                    body.'
+                  schema:
+                    type: string
+                    pattern: ^sha256=[0-9a-f]+$
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/CallbackPayload'
+                    examples:
+                      intermediateAccumulator:
+                        summary: Intermediate accumulator snapshot
+                        description: Example from the documentation.
+                        value:
+                          event: coupons.settled
+                          batchId: d407e986f3a64d9d36a77bf532322ef8
+                          clientId: 17
+                          couponCount: 1
+                          coupons:
+                            - coupon_code: '000000000272'
+                              realWin: 0
+                              calculate_coefficient: 0
+                              status: 0
+                              calculate_date: 1784897500000
+                              events_data:
+                                - uuid: '912'
+                                  status: 1
+                                  calculate_coefficient: 2
+                                  calculate_date: 1784897500000
+                                  calculate_score: '2:1'
+                                  settlement_reason_code: REMOTE_WIN
+                                  settlement_reason: Win
+                                  timer: 0
+                                - uuid: '913'
+                                  status: 0
+                                  calculate_coefficient: null
+                                  calculate_date: null
+                                  calculate_score: ''
+                                  settlement_reason_code: null
+                                  settlement_reason: null
+                                  timer: 0
+              responses:
+                '200':
+                  description: Batch committed. The body may be empty or a `CallbackAck`.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/CallbackAck'
+                      examples:
+                        ack:
+                          summary: Recommended acknowledgement
+                          value:
+                            success: true
+                            processed: 1
+                '401':
+                  description: Invalid or missing signature. Final — not retried.
+                '403':
+                  description: Rejected by the partner's IP filter. Final — not retried.
+                '500':
+                  description: Temporary error — delivery is retried.
+                '502':
+                  description: Temporary error — delivery is retried.
+                '503':
+                  description: Temporary error — delivery is retried.
+                '504':
+                  description: Temporary error — delivery is retried.
+  /api/partner/coupons/get:
+    get:
+      tags:
+        - Coupons
+      summary: Get one coupon
+      description: |-
+        Returns the current state of one coupon with all its bets, directly in `body`. A coupon that does not exist and a coupon of another partner both return business error `471` (`Coupon not found`).
+
+        The endpoint also recognizes the compatibility parameter names `code`, `coupon_id` and `bet_code`; new integrations should use `coupon_code` and send only one of them.
+      operationId: getCoupon
+      externalDocs:
+        description: Retrieving a Single Coupon
+        url: https://sportapi.net/docs/coupon/coupons/get-coupon.html
+      parameters:
+        - name: coupon_code
+          in: query
+          required: true
+          description: Public coupon code as a string, including leading zeros.
+          schema:
+            type: string
+          example: '000000000272'
+      responses:
+        '200':
+          description: The coupon (`code = 1`) or a business error (`code = 0`).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/GetCouponResponse'
+                  - $ref: '#/components/schemas/BusinessError'
+              examples:
+                won:
+                  summary: Settled winning single
+                  value:
+                    code: 1
+                    body:
+                      coupon_code: '000000000272'
+                      amount: 10
+                      win: 18.5
+                      potential_win: 18.5
+                      real_win: 18.5
+                      coef: 1.85
+                      original_coef: 1.85
+                      calculate_coef: 1.85
+                      has_return: false
+                      date: 1784970000000
+                      status: 2
+                      asian: false
+                      calculate_date: 1784973600000
+                      coupon_type: 1
+                      events_count: 1
+                      events_data:
+                        - id: 84521
+                          game_id: 737779544
+                          main_game_id: 737779544
+                          is_sub_game: false
+                          parent_game_id: null
+                          sub_game_key: null
+                          raw_pointer: line#737779544#1#1#0#1.85
+                          line_type: line
+                          is_live: false
+                          bet_group_id: 1
+                          bet_group_name: Match Result
+                          bet_id: 1
+                          bet_name: First Team to Win
+                          sport_id: 1
+                          sport_name: Football
+                          tournament_id: 10001
+                          tournament: National League
+                          event_date: 1784971800000
+                          status: 1
+                          opp1: Team A
+                          opp2: Team B
+                          coef: 1.85
+                          calc_coef: 1.85
+                          bet_score: line#737779544#1#1#0#1.85
+                          calculate_date: 1784973600000
+                          calculate_score: '2:1'
+                          settlement_reason_code: AUTOMATIC_SETTLEMENT
+                          settlement_reason: Calculated automatically
+                          placement_score_full: null
+                          placement_score_periods: null
+                          calculation_score_full: '2:1'
+                          calculation_score_periods: null
+                          timer: null
+                          dop_name: null
+                          rate: '0'
+                          sgame_id: null
+                          game_num: null
+                          stat_id: null
+                          team1_id: 101
+                          team2_id: 102
+                          opp_icon1: 101
+                          opp_icon2: 102
+                    error_code: null
+                    error_message: null
+                    date: 1784973600100
+                    time_ms: 6
+                    path: /api/partner/coupons/get
+                notFound:
+                  summary: 471 — coupon not found
+                  value:
+                    code: 0
+                    body: null
+                    error_code: 471
+                    error_message: Coupon not found
+                    date: 1784970000000
+                    time_ms: 5
+                    path: /api/partner/coupons/get
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        5XX:
+          $ref: '#/components/responses/ServerError'
+  /api/partner/coupons/results:
+    post:
+      tags:
+        - Coupons
+      summary: Get coupons by codes or by placement period
+      description: |-
+        Two mutually exclusive modes:
+
+        - **By codes** — `coupon_ids`, no more than 100 per request. Duplicates are removed, unknown and foreign coupons are omitted, the order may differ — match results by `coupon_code`.
+        - **By placement period** — `start_date` and `end_date` in Unix milliseconds, at most 24 hours. Selection uses placement time, not settlement time; use `/coupons/calculated` for recent results.
+
+        An invalid combination returns business error `1002`.
+      operationId: getCouponResults
+      externalDocs:
+        description: Retrieving Coupons by List or Time Period
+        url: https://sportapi.net/docs/coupon/coupons/query-results.html
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CouponResultsRequest'
+            examples:
+              byIds:
+                summary: By coupon codes
+                value:
+                  coupon_ids:
+                    - '000000000272'
+                    - '000000000273'
+              byPeriod:
+                summary: By placement period (24 hours)
+                value:
+                  start_date: 1784880000000
+                  end_date: 1784966400000
+      responses:
+        '200':
+          description: Coupons found (`code = 1`, possibly an empty array) or a business error (`code
+            = 0`).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CouponResultsResponse'
+                  - $ref: '#/components/schemas/BusinessError'
+              examples:
+                byIds:
+                  summary: Result of an `ids` query
+                  value:
+                    code: 1
+                    body:
+                      query_type: ids
+                      coupons:
+                        - coupon_code: '000000000272'
+                          amount: 10
+                          win: 18.5
+                          potential_win: 18.5
+                          real_win: 18.5
+                          coef: 1.85
+                          original_coef: 1.85
+                          calculate_coef: 1.85
+                          has_return: false
+                          date: 1784970000000
+                          status: 2
+                          asian: false
+                          calculate_date: 1784973600000
+                          coupon_type: 1
+                          events_count: 1
+                          events_data:
+                            - id: 84521
+                              game_id: 737779544
+                              main_game_id: 737779544
+                              is_sub_game: false
+                              parent_game_id: null
+                              sub_game_key: null
+                              raw_pointer: line#737779544#1#1#0#1.85
+                              line_type: line
+                              is_live: false
+                              bet_group_id: 1
+                              bet_group_name: Match Result
+                              bet_id: 1
+                              bet_name: First Team to Win
+                              sport_id: 1
+                              sport_name: Football
+                              tournament_id: 10001
+                              tournament: National League
+                              event_date: 1784971800000
+                              status: 1
+                              opp1: Team A
+                              opp2: Team B
+                              coef: 1.85
+                              calc_coef: 1.85
+                              bet_score: line#737779544#1#1#0#1.85
+                              calculate_date: 1784973600000
+                              calculate_score: '2:1'
+                              settlement_reason_code: AUTOMATIC_SETTLEMENT
+                              settlement_reason: Calculated automatically
+                              placement_score_full: null
+                              placement_score_periods: null
+                              calculation_score_full: '2:1'
+                              calculation_score_periods: null
+                              timer: null
+                              dop_name: null
+                              rate: '0'
+                              sgame_id: null
+                              game_num: null
+                              stat_id: null
+                              team1_id: 101
+                              team2_id: 102
+                              opp_icon1: 101
+                              opp_icon2: 102
+                    error_code: null
+                    error_message: null
+                    date: 1784973600100
+                    time_ms: 8
+                    path: /api/partner/coupons/results
+                empty:
+                  summary: Nothing found
+                  value:
+                    code: 1
+                    body:
+                      query_type: ids
+                      coupons: []
+                    error_code: null
+                    error_message: null
+                    date: 1784970000000
+                    time_ms: 8
+                    path: /api/partner/coupons/results
+                invalidParameters:
+                  summary: 1002 — invalid parameter combination
+                  value:
+                    code: 0
+                    body: null
+                    error_code: 1002
+                    error_message: <parameter error description>
+                    date: 1784970000000
+                    time_ms: 4
+                    path: /api/partner/coupons/results
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        5XX:
+          $ref: '#/components/responses/ServerError'
+  /api/partner/coupons/calculated:
+    get:
+      tags:
+        - Coupons
+      summary: Coupons settled in the last N minutes
+      description: |-
+        Returns full models of coupons whose **final settlement time** falls within the last `time` minutes (placement time does not matter). Active coupons are not returned.
+
+        For polling, request a window at least twice the polling interval — for example every 5 minutes with `time=10`. Receiving an already processed coupon again is expected: update by `coupon_code` and keep financial operations idempotent. See [Polling Fallback](https://sportapi.net/docs/coupon/settlement/polling-fallback.html).
+      operationId: getCalculatedCoupons
+      externalDocs:
+        description: Active and Recently Settled Coupons
+        url: https://sportapi.net/docs/coupon/coupons/active-and-calculated.html
+      parameters:
+        - name: time
+          in: query
+          required: false
+          description: Window in minutes. Omitted or `<= 0` — 5 minutes; values above 120 are limited
+            to 120.
+          schema:
+            type: integer
+            default: 5
+          example: 10
+      responses:
+        '200':
+          description: Coupons in `body[]` (`code = 1`, possibly empty) or a business error (`code = 0`).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CouponListResponse'
+                  - $ref: '#/components/schemas/BusinessError'
+              examples:
+                settled:
+                  summary: One settled coupon
+                  value:
+                    code: 1
+                    body:
+                      - coupon_code: '000000000272'
+                        amount: 10
+                        win: 18.5
+                        potential_win: 18.5
+                        real_win: 18.5
+                        coef: 1.85
+                        original_coef: 1.85
+                        calculate_coef: 1.85
+                        has_return: false
+                        date: 1784970000000
+                        status: 2
+                        asian: false
+                        calculate_date: 1784973600000
+                        coupon_type: 1
+                        events_count: 1
+                        events_data:
+                          - id: 84521
+                            game_id: 737779544
+                            main_game_id: 737779544
+                            is_sub_game: false
+                            parent_game_id: null
+                            sub_game_key: null
+                            raw_pointer: line#737779544#1#1#0#1.85
+                            line_type: line
+                            is_live: false
+                            bet_group_id: 1
+                            bet_group_name: Match Result
+                            bet_id: 1
+                            bet_name: First Team to Win
+                            sport_id: 1
+                            sport_name: Football
+                            tournament_id: 10001
+                            tournament: National League
+                            event_date: 1784971800000
+                            status: 1
+                            opp1: Team A
+                            opp2: Team B
+                            coef: 1.85
+                            calc_coef: 1.85
+                            bet_score: line#737779544#1#1#0#1.85
+                            calculate_date: 1784973600000
+                            calculate_score: '2:1'
+                            settlement_reason_code: AUTOMATIC_SETTLEMENT
+                            settlement_reason: Calculated automatically
+                            placement_score_full: null
+                            placement_score_periods: null
+                            calculation_score_full: '2:1'
+                            calculation_score_periods: null
+                            timer: null
+                            dop_name: null
+                            rate: '0'
+                            sgame_id: null
+                            game_num: null
+                            stat_id: null
+                            team1_id: 101
+                            team2_id: 102
+                            opp_icon1: 101
+                            opp_icon2: 102
+                    error_code: null
+                    error_message: null
+                    date: 1784973600100
+                    time_ms: 12
+                    path: /api/partner/coupons/calculated
+                empty:
+                  summary: No new settlements
+                  value:
+                    code: 1
+                    body: []
+                    error_code: null
+                    error_message: null
+                    date: 1784973600100
+                    time_ms: 5
+                    path: /api/partner/coupons/calculated
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        5XX:
+          $ref: '#/components/responses/ServerError'
+  /api/partner/coupons/active:
+    get:
+      tags:
+        - Coupons
+      summary: All active coupons
+      description: Returns full models of all coupons the API currently considers active. No parameters.
+        An empty array is a successful result.
+      operationId: getActiveCoupons
+      externalDocs:
+        description: Active and Recently Settled Coupons
+        url: https://sportapi.net/docs/coupon/coupons/active-and-calculated.html
+      responses:
+        '200':
+          description: Coupons in `body[]` (`code = 1`, possibly empty) or a business error (`code = 0`).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CouponListResponse'
+                  - $ref: '#/components/schemas/BusinessError'
+              examples:
+                active:
+                  summary: One active coupon
+                  value:
+                    code: 1
+                    body:
+                      - coupon_code: '000000000272'
+                        amount: 10
+                        win: 18.5
+                        potential_win: 18.5
+                        real_win: null
+                        coef: 1.85
+                        original_coef: 1.85
+                        calculate_coef: null
+                        has_return: false
+                        date: 1784970000000
+                        status: 0
+                        asian: false
+                        calculate_date: null
+                        coupon_type: 1
+                        events_count: 1
+                        events_data:
+                          - id: 84521
+                            game_id: 737779544
+                            main_game_id: 737779544
+                            is_sub_game: false
+                            parent_game_id: null
+                            sub_game_key: null
+                            raw_pointer: line#737779544#1#1#0#1.85
+                            line_type: line
+                            is_live: false
+                            bet_group_id: 1
+                            bet_group_name: Match Result
+                            bet_id: 1
+                            bet_name: First Team to Win
+                            sport_id: 1
+                            sport_name: Football
+                            tournament_id: 10001
+                            tournament: National League
+                            event_date: 1784971800000
+                            status: 0
+                            opp1: Team A
+                            opp2: Team B
+                            coef: 1.85
+                            calc_coef: null
+                            bet_score: line#737779544#1#1#0#1.85
+                            calculate_date: null
+                            calculate_score: null
+                            settlement_reason_code: null
+                            settlement_reason: null
+                            placement_score_full: null
+                            placement_score_periods: null
+                            calculation_score_full: null
+                            calculation_score_periods: null
+                            timer: null
+                            dop_name: null
+                            rate: '0'
+                            sgame_id: null
+                            game_num: null
+                            stat_id: null
+                            team1_id: 101
+                            team2_id: 102
+                            opp_icon1: 101
+                            opp_icon2: 102
+                    error_code: null
+                    error_message: null
+                    date: 1784970000100
+                    time_ms: 15
+                    path: /api/partner/coupons/active
+                empty:
+                  summary: No active coupons
+                  value:
+                    code: 1
+                    body: []
+                    error_code: null
+                    error_message: null
+                    date: 1784970000100
+                    time_ms: 5
+                    path: /api/partner/coupons/active
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        5XX:
+          $ref: '#/components/responses/ServerError'
+  /api/partner/balance:
+    get:
+      tags:
+        - Account
+      summary: Client account balance
+      description: 'Reads the balance of the authenticated client account in the Coupon Settlement System.
+        It only reads: coupon placement is what debits this balance. It is not an end-user balance — the
+        partner manages user wallets separately.'
+      operationId: getBalance
+      externalDocs:
+        description: Endpoint Reference
+        url: https://sportapi.net/docs/coupon/reference/endpoints.html
+      responses:
+        '200':
+          description: The balance (`code = 1`) or a business error (`code = 0`).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/BalanceResponse'
+                  - $ref: '#/components/schemas/BusinessError'
+              examples:
+                balance:
+                  summary: Balance
+                  value:
+                    code: 1
+                    body:
+                      balance: 100
+                    error_code: null
+                    error_message: null
+                    date: 1784970000000
+                    time_ms: 3
+                    path: /api/partner/balance
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        5XX:
+          $ref: '#/components/responses/ServerError'
+components:
+  securitySchemes:
+    ClientJWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'Client JWT from `POST /api/partner/login`, sent as `Authorization: Bearer <token>`.
+        There is no refresh method: on HTTP 401 sign in again. An administrator JWT cannot be used. See
+        [Authentication](https://sportapi.net/docs/coupon/getting-started/authentication.html).'
+  responses:
+    BadRequest:
+      description: Invalid JSON or an incompatible parameter type. Correct the request.
+    Unauthorized:
+      description: The JWT is missing, malformed, expired or revoked. Sign in again with `POST /api/partner/login`
+        and retry a safe request — do not loop if a fresh token is rejected too.
+    Forbidden:
+      description: The token lacks the client role (for example an administrator JWT) or access is denied.
+    ServerError:
+      description: Internal or temporary server error. Read methods can be retried; never retry coupon
+        placement blindly — first make sure the original request was not processed.
+  schemas:
+    ResponseEnvelope:
+      type: object
+      description: Common envelope of the `/api/partner/**` methods. **HTTP 200 does not mean success:**
+        business errors are usually returned with HTTP 200 and `code = 0`. Check `code`, then `error_code`.
+        See [API Response Format](https://sportapi.net/docs/coupon/reference/response-format.html).
+      required:
+        - code
+      properties:
+        code:
+          type: integer
+          enum:
+            - 0
+            - 1
+          description: 'Operation result: `1` — success, `0` — business error.'
+        body:
+          description: Operation result or error details. Its type depends on the method (object, array,
+            string or `null`).
+        error_code:
+          type: integer
+          format: int64
+          nullable: true
+          description: Machine-readable business error code; `null` on success. Use it, not `error_message`,
+            in program logic.
+        error_message:
+          type: string
+          nullable: true
+          description: Error description for diagnostics; `null` on success. May be refined over time.
+        date:
+          type: integer
+          format: int64
+          description: Response generation time. Unix timestamp in milliseconds.
+          example: 1784970000000
+        time_ms:
+          type: integer
+          description: Server-side processing time in milliseconds.
+          example: 5
+        path:
+          type: string
+          description: Path of the method that processed the request.
+          example: /api/partner/coupons/get
+    BusinessError:
+      description: 'Business error: the request was processed but the operation failed. Usually returned
+        with HTTP 200. Handle `error_code`; for coupon placement errors `501`–`504`, `body.changes` lists
+        the affected bets. See [Error Codes](https://sportapi.net/docs/coupon/reference/error-codes.html).'
+      allOf:
+        - $ref: '#/components/schemas/ResponseEnvelope'
+        - type: object
+          required:
+            - error_code
+          properties:
+            code:
+              type: integer
+              enum:
+                - 0
+            error_code:
+              type: integer
+              description: Business error code.
+              example: 471
+    HealthResponse:
+      description: Health-check response. Returned with `code = 1`.
+      allOf:
+        - $ref: '#/components/schemas/ResponseEnvelope'
+        - type: object
+          required:
+            - body
+          properties:
+            code:
+              type: integer
+              enum:
+                - 1
+            body:
+              type: string
+              example: ok
+    LoginRequest:
+      type: object
+      description: 'Partner credentials issued by the SportAPI manager. Provide exactly one username field:
+        `username` (recommended) or its compatibility alias `login`.'
+      required:
+        - password
+      properties:
+        username:
+          type: string
+          description: Partner username.
+          example: partner-demo
+        login:
+          type: string
+          description: Compatibility alias for `username`. New integrations should use `username`.
+          deprecated: true
+        password:
+          type: string
+          description: Partner password.
+          format: password
+    LoginResult:
+      type: object
+      properties:
+        token:
+          type: string
+          description: 'Signed client JWT. Send it as `Authorization: Bearer <token>`; treat it as opaque.'
+        username:
+          type: string
+          description: Authenticated client username.
+    LoginResponse:
+      description: Login response. Returned with `code = 1`.
+      allOf:
+        - $ref: '#/components/schemas/ResponseEnvelope'
+        - type: object
+          required:
+            - body
+          properties:
+            code:
+              type: integer
+              enum:
+                - 1
+            body:
+              $ref: '#/components/schemas/LoginResult'
+    PlaceCouponRequest:
+      type: object
+      description: See [Coupon Placement](https://sportapi.net/docs/coupon/bet-placement/place-coupon.html).
+      required:
+        - list_bets
+        - amount
+      properties:
+        list_bets:
+          type: array
+          minItems: 1
+          description: 'Bet pointers of the selected outcomes, one string per bet. Format: `line_type#game_id#group_id#type_id#rate#coefficient[#player_id]`
+            (`#`, `|` or the mixed format are accepted). Build it from the Sport Line outcome without
+            modifying it. One accumulator may contain no more than 15 events. See [Bet Pointer](https://sportapi.net/docs/coupon/bet-placement/bet-pointer.html).'
+          items:
+            type: string
+            example: line#737779544#1#1#0#1.85
+        amount:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+          description: Positive stake of **one** coupon. With `multi = true` it applies to every single
+            created, so the total debit is `amount × number of entries in list_bets`.
+          example: 10
+        currency:
+          type: string
+          nullable: true
+          description: Any currency identifier (`USD`, `UAH`, `COIN`, an internal currency…). Not returned
+            in coupon models — store it on your side.
+          example: USD
+        callback_url:
+          type: string
+          nullable: true
+          description: Result handler URL for callbacks (`https://` in production). `null`, an empty string
+            or an omitted field disables callbacks for this coupon; without callbacks the main site domain
+            may be given.
+          example: https://partner.example.com/api/coupon-result
+        lang:
+          type: string
+          nullable: true
+          description: Two-letter language code for names in coupon data. Fixed at placement time; ask
+            the manager for the list of codes.
+          example: en
+        mode:
+          type: string
+          enum:
+            - reject
+            - accept
+          default: reject
+          description: 'Changed-odds rule: `reject` — reject the coupon if odds changed (default, also
+            used when the field is omitted or `null`); `accept` — accept changes allowed by `mode_type`.
+            See [Odds Changes](https://sportapi.net/docs/coupon/bet-placement/odds-changes.html).'
+        mode_type:
+          type: integer
+          enum:
+            - 1
+            - 2
+            - 3
+          description: 'Required when `mode = "accept"`: `1` — accept increases only, `2` — accept decreases
+            only, `3` — accept both. Never allows blocked or unavailable outcomes. Omit it (or send `null`)
+            with `mode = "reject"`.'
+        multi:
+          type: boolean
+          nullable: true
+          default: false
+          description: '`false` (default) — all entries form one single or accumulator; `true` — a separate
+            single for every entry. See [Singles, Accumulators and multi](https://sportapi.net/docs/coupon/bet-placement/coupon-types.html).'
+    OutcomeChange:
+      type: object
+      description: A bet that failed validation during placement (`body.changes[]`).
+      properties:
+        game_id:
+          type: integer
+          format: int64
+          description: Event ID from the submitted pointer.
+        bet_coefficient:
+          type: number
+          description: Odds submitted by the partner.
+        actual_coefficient:
+          type: number
+          nullable: true
+          description: Current odds, or `null` when the outcome is unavailable or validation did not complete.
+        change_type:
+          type: integer
+          nullable: true
+          description: '`1` — odds increased, `2` — odds decreased, `null` — not applicable (blocked,
+            unavailable or validation error).'
+        status:
+          type: string
+          description: '`rejected` (501, odds changed), `no_data` (502, outcome absent), `block` (503,
+            outcome blocked), `error` (504, validation error).'
+          enum:
+            - rejected
+            - no_data
+            - block
+            - error
+    CouponBet:
+      type: object
+      description: One accepted bet inside a coupon (`events_data[]`). Identify it locally by `coupon_code`
+        + `id`. See [Coupon and Bet Model](https://sportapi.net/docs/coupon/coupons/coupon-model.html).
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Internal accepted-bet ID. In callbacks the same ID arrives as the string `uuid`.
+        game_id:
+          type: integer
+          format: int64
+          description: ID of the event or sub-event the bet was placed on.
+        main_game_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Main game ID from the provider data.
+        is_sub_game:
+          type: boolean
+          description: '`true` when the bet belongs to a sub-event or period.'
+        parent_game_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Parent event ID for a sub-event.
+        sub_game_key:
+          type: string
+          nullable: true
+          description: Stable internal sub-event key.
+        sgame_id:
+          type: string
+          nullable: true
+          description: Sub-event ID from the sports line provider.
+        game_num:
+          type: integer
+          format: int64
+          nullable: true
+          description: Additional provider game number.
+        stat_id:
+          type: string
+          nullable: true
+          description: Provider statistics ID.
+        dop_name:
+          type: string
+          nullable: true
+          description: Name of the period, half, set, inning or another sub-event.
+        raw_pointer:
+          type: string
+          description: Original bet pointer used at placement, stored unmodified.
+        line_type:
+          type: string
+          description: '`line` for Prematch, `live` for Live.'
+          enum:
+            - line
+            - live
+        is_live:
+          type: boolean
+          description: '`true` when the bet was created from the Live line.'
+        sport_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Sport ID.
+        sport_name:
+          type: string
+          nullable: true
+          description: Localized sport name.
+        tournament_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Tournament ID.
+        tournament:
+          type: string
+          nullable: true
+          description: Localized tournament name.
+        event_date:
+          type: integer
+          format: int64
+          nullable: true
+          description: Scheduled event start. Unix timestamp in milliseconds.
+        opp1:
+          type: string
+          nullable: true
+          description: First team or participant.
+        opp2:
+          type: string
+          nullable: true
+          description: Second team or participant.
+        team1_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: First team or participant ID.
+        team2_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Second team or participant ID.
+        opp_icon1:
+          type: integer
+          format: int64
+          nullable: true
+          description: Legacy-compatible name; equals `team1_id` (an ID, not an image). Use `team1_id`.
+        opp_icon2:
+          type: integer
+          format: int64
+          nullable: true
+          description: Legacy-compatible name; equals `team2_id` (an ID, not an image). Use `team2_id`.
+        bet_group_id:
+          type: integer
+          format: int64
+          description: Bet group (market) ID.
+        bet_group_name:
+          type: string
+          nullable: true
+          description: Localized bet group name.
+        bet_id:
+          type: integer
+          format: int64
+          description: Outcome ID within the group.
+        bet_name:
+          type: string
+          nullable: true
+          description: Localized outcome name; may already include the parameter and player name.
+        rate:
+          type: string
+          description: 'Outcome parameter: total, handicap, or `0` when no parameter is required.'
+          example: '0'
+        status:
+          type: integer
+          description: |-
+            Bet status (a different table from coupon statuses):
+
+            | Code | Name | Settlement multiplier |
+            |---|---|---|
+            | `0` | `NET` — not settled yet | — |
+            | `1` | `WIN` | original `coef` |
+            | `2` | `LOSE` | `0` |
+            | `3` | `RETURN` | `1` |
+            | `4` | `RECALCULATE` — returned for recalculation | — |
+            | `21` | `HALF_WIN` | `(coef + 1) / 2` |
+            | `22` | `HALF_LOSE` | `0.5` |
+            | `23` | `PUSH` | `1` |
+        coef:
+          type: number
+          description: Bet odds fixed at placement.
+        calc_coef:
+          type: number
+          nullable: true
+          description: Bet settlement multiplier; `null` before settlement.
+        calculate_date:
+          type: integer
+          format: int64
+          nullable: true
+          description: Bet settlement time; `null` before settlement. Unix timestamp in milliseconds.
+        settlement_reason_code:
+          type: string
+          nullable: true
+          description: Stable machine-readable settlement or return reason, for example `AUTOMATIC_SETTLEMENT`,
+            `MATCH_CANCELLED`, `MATCH_POSTPONED`, `MARKET_PUSH`, `REMOTE_WIN`. The list may grow — store
+            unknown values without rejecting the response. `null` before settlement.
+        settlement_reason:
+          type: string
+          nullable: true
+          description: Settlement or return reason text. Not a program key; may be untranslated.
+        bet_score:
+          type: string
+          description: Legacy compatibility field containing the original bet pointer — **not** the match
+            score.
+        calculate_score:
+          type: string
+          nullable: true
+          description: Final full score used for settlement.
+        placement_score_full:
+          type: string
+          nullable: true
+          description: Full score when the bet was placed.
+        placement_score_periods:
+          type: string
+          nullable: true
+          description: Period-by-period score when the bet was placed.
+        calculation_score_full:
+          type: string
+          nullable: true
+          description: Full score at settlement time.
+        calculation_score_periods:
+          type: string
+          nullable: true
+          description: Period-by-period score at settlement time.
+        timer:
+          type: integer
+          nullable: true
+          description: Event timer, when available.
+    Coupon:
+      type: object
+      description: Full coupon model. Use `real_win` for crediting after a final status; never `potential_win`.
+        See [Coupon and Bet Model](https://sportapi.net/docs/coupon/coupons/coupon-model.html).
+      properties:
+        coupon_code:
+          type: string
+          description: Public coupon code, usually 12 digits. Store and send it as a string — leading
+            zeros are part of the code.
+          example: '000000000272'
+        date:
+          type: integer
+          format: int64
+          description: Coupon placement time. Unix timestamp in milliseconds.
+        status:
+          type: integer
+          description: |-
+            Coupon status (a different table from bet statuses):
+
+            | Code | Name | Meaning | Final |
+            |---|---|---|---|
+            | `0` | `NEW` | Active, or an accumulator is partially settled | No |
+            | `2` | `WIN` | The coupon won | Yes |
+            | `4` | `LOSE` | The coupon lost (for an accumulator — possibly right after the first losing bet) | Yes |
+            | `8` | `RETURN` | The coupon was fully returned | Yes |
+            | `15` | `UPDATE` | Returned for recalculation, waiting for a new result | No |
+
+            See [Statuses and Payouts](https://sportapi.net/docs/coupon/settlement/statuses-and-payouts.html).
+        coupon_type:
+          type: integer
+          description: '`1` — single, `2` — accumulator.'
+        events_count:
+          type: integer
+          description: Number of bets. Always iterate over the actual `events_data`.
+        events_data:
+          type: array
+          description: All bets of the coupon.
+          items:
+            $ref: '#/components/schemas/CouponBet'
+        has_return:
+          type: boolean
+          description: '`true` when the coupon contains a returned bet.'
+        asian:
+          type: boolean
+          description: '`true` when the coupon contains an Asian market.'
+        amount:
+          type: number
+          description: Stake amount.
+        win:
+          type: number
+          description: Current displayed payout, kept for display and compatibility.
+        potential_win:
+          type: number
+          description: Potential payout calculated at placement.
+        real_win:
+          type: number
+          nullable: true
+          description: Actual payout after settlement; `null` before a final result.
+        coef:
+          type: number
+          description: 'Working odds: original before settlement, may account for returns after settlement.'
+        original_coef:
+          type: number
+          description: Coupon odds fixed at placement.
+        calculate_coef:
+          type: number
+          nullable: true
+          description: Final settlement multiplier; `null` before settlement.
+        calculate_date:
+          type: integer
+          format: int64
+          nullable: true
+          description: Time of the latest settled bet; `null` before settlement (never `0`). Unix timestamp
+            in milliseconds.
+    PlaceCouponResult:
+      type: object
+      description: '`coupons` holds the created coupons on success (always an array — with `multi = true`
+        one object per single). On errors `501`–`504`, `changes` lists the bets that failed validation.'
+      properties:
+        coupons:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coupon'
+        changes:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/OutcomeChange'
+    PlaceCouponResponse:
+      description: Coupon placement response. Returned with `code = 1`.
+      allOf:
+        - $ref: '#/components/schemas/ResponseEnvelope'
+        - type: object
+          required:
+            - body
+          properties:
+            code:
+              type: integer
+              enum:
+                - 1
+            body:
+              $ref: '#/components/schemas/PlaceCouponResult'
+    GetCouponResponse:
+      description: One coupon directly in `body` (there is no `body.coupons` array here). Returned with
+        `code = 1`.
+      allOf:
+        - $ref: '#/components/schemas/ResponseEnvelope'
+        - type: object
+          required:
+            - body
+          properties:
+            code:
+              type: integer
+              enum:
+                - 1
+            body:
+              $ref: '#/components/schemas/Coupon'
+    CouponResultsByIds:
+      type: object
+      title: By coupon codes
+      description: 'Mode 1: current state of known coupons. Do not combine with dates.'
+      required:
+        - coupon_ids
+      properties:
+        coupon_ids:
+          type: array
+          minItems: 1
+          maxItems: 100
+          description: Coupon codes as strings (no more than 100 per request).
+          items:
+            type: string
+            example: '000000000272'
+    CouponResultsByPeriod:
+      type: object
+      title: By placement period
+      description: 'Mode 2: coupons **placed** in the period (not settled). `end_date` must be greater
+        than `start_date`; the interval cannot exceed 24 hours.'
+      required:
+        - start_date
+        - end_date
+      properties:
+        start_date:
+          type: integer
+          format: int64
+          description: Start of the placement period. Unix timestamp in milliseconds.
+          example: 1784880000000
+        end_date:
+          type: integer
+          format: int64
+          description: End of the placement period. Unix timestamp in milliseconds.
+          example: 1784966400000
+    CouponResultsRequest:
+      description: Exactly one mode per request. An invalid combination returns business error `1002`.
+      oneOf:
+        - $ref: '#/components/schemas/CouponResultsByIds'
+        - $ref: '#/components/schemas/CouponResultsByPeriod'
+    CouponResultsResult:
+      type: object
+      properties:
+        query_type:
+          type: string
+          description: 'Processed mode: `ids` or `time`. Set by the API.'
+          enum:
+            - ids
+            - time
+        coupons:
+          type: array
+          description: Current full coupon models. Unknown codes and other partners' coupons are omitted;
+            the order may differ from the request — match by `coupon_code`.
+          items:
+            $ref: '#/components/schemas/Coupon'
+    CouponResultsResponse:
+      description: Batch coupon query response. Returned with `code = 1`.
+      allOf:
+        - $ref: '#/components/schemas/ResponseEnvelope'
+        - type: object
+          required:
+            - body
+          properties:
+            code:
+              type: integer
+              enum:
+                - 1
+            body:
+              $ref: '#/components/schemas/CouponResultsResult'
+    CouponListResponse:
+      description: Coupons directly in `body[]`. An empty array is a successful result. Returned with
+        `code = 1`.
+      allOf:
+        - $ref: '#/components/schemas/ResponseEnvelope'
+        - type: object
+          required:
+            - body
+          properties:
+            code:
+              type: integer
+              enum:
+                - 1
+            body:
+              type: array
+              items:
+                $ref: '#/components/schemas/Coupon'
+    BalanceResult:
+      type: object
+      properties:
+        balance:
+          type: number
+          description: Balance of the authenticated client account in the Coupon Settlement System (not
+            an end-user balance). Coupon placement debits it automatically.
+    BalanceResponse:
+      description: Client balance response. Returned with `code = 1`.
+      allOf:
+        - $ref: '#/components/schemas/ResponseEnvelope'
+        - type: object
+          required:
+            - body
+          properties:
+            code:
+              type: integer
+              enum:
+                - 1
+            body:
+              $ref: '#/components/schemas/BalanceResult'
+    CallbackBet:
+      type: object
+      description: Settlement snapshot of one bet in a callback.
+      properties:
+        uuid:
+          type: string
+          description: The bet ID as a string; equals `events_data[].id` of the full model.
+          example: '912'
+        status:
+          type: integer
+          description: Current bet status (see `CouponBet.status`).
+        calculate_coefficient:
+          type: number
+          nullable: true
+          description: Bet settlement multiplier (`calc_coef` in the full model).
+        calculate_date:
+          type: integer
+          format: int64
+          nullable: true
+          description: Bet settlement date. Unix timestamp in milliseconds.
+        calculate_score:
+          type: string
+          description: Settlement score; may be an empty string for an active bet.
+        settlement_reason_code:
+          type: string
+          nullable: true
+          description: Stable machine-readable settlement or return reason, for example `AUTOMATIC_SETTLEMENT`,
+            `MATCH_CANCELLED`, `MATCH_POSTPONED`, `MARKET_PUSH`, `REMOTE_WIN`. The list may grow — store
+            unknown values without rejecting the response. `null` before settlement.
+        settlement_reason:
+          type: string
+          nullable: true
+          description: Settlement or return reason text; `null` before settlement.
+        timer:
+          type: integer
+          description: Compatibility field, currently `0`.
+    CallbackCoupon:
+      type: object
+      description: Settlement snapshot of one coupon. It does not include `amount`, currency, names or
+        the original pointer — store them at placement or read the full model through the API.
+      properties:
+        coupon_code:
+          type: string
+          description: Public coupon code.
+        realWin:
+          type: number
+          description: Actual payout. `0` in an intermediate snapshot.
+        calculate_coefficient:
+          type: number
+          description: Final settlement multiplier. `0` in an intermediate snapshot.
+        status:
+          type: integer
+          description: Current coupon status (see `Coupon.status`).
+        calculate_date:
+          type: integer
+          format: int64
+          nullable: true
+          description: Latest settlement date among the settled bets. Unix timestamp in milliseconds.
+        events_data:
+          type: array
+          description: All bets, including unsettled ones.
+          items:
+            $ref: '#/components/schemas/CallbackBet'
+    CallbackPayload:
+      type: object
+      description: Body of a result callback. Not wrapped in the Client API envelope. Verify `X-Coupon-Signature`
+        on the raw bytes **before** parsing, deduplicate by `batchId`, and process every coupon.
+      required:
+        - event
+        - batchId
+        - couponCount
+        - coupons
+      properties:
+        event:
+          type: string
+          description: Always `coupons.settled` — also for intermediate, recalculation and post-recalculation
+            snapshots; check the statuses.
+          enum:
+            - coupons.settled
+        batchId:
+          type: string
+          description: ID of this batch version. A repeated delivery keeps the same `batchId`; a new settlement
+            state gets a new one. Store it with a unique constraint.
+        clientId:
+          type: integer
+          description: Internal partner account ID. Informational only.
+        couponCount:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Number of entries in `coupons`.
+        coupons:
+          type: array
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/CallbackCoupon'
+    CallbackAck:
+      type: object
+      description: 'Optional acknowledgement body. HTTP 200 with an empty body is also a success. `success:
+        false` or `processed < couponCount` is a final error that is **not** retried.'
+      properties:
+        success:
+          type: boolean
+        processed:
+          type: integer
+          description: Must equal `couponCount`.

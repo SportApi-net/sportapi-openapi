@@ -1,0 +1,3231 @@
+{
+  "item": [
+    {
+      "name": "Navigation",
+      "description": "Sports, countries and tournaments that currently have matches.",
+      "item": [
+        {
+          "id": "313dc1d8-aa0f-4852-87f6-aabe5156e123",
+          "name": "Sports line menu (sport → country → tournament)",
+          "request": {
+            "name": "Sports line menu (sport → country → tournament)",
+            "description": {
+              "content": "Returns the hierarchy of the available sports line — sports, their countries and tournaments — with the number of available matches at each level. Use it to build the site menu and to get the `sportId` and `tournamentId` for `events`. It contains no matches or odds.\n\nOnly sections that currently have matches for the selected line type are returned, so do not store the IDs as a permanent list. Tournament names may occasionally be empty strings.\n\n**Recommended request frequency:** Live — no more than once every 20 seconds; Prematch (`line`) — no more than once every 60 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "menu",
+                ":type",
+                ":lang"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "`true` switches the method to esports data.",
+                    "type": "text/plain"
+                  },
+                  "key": "cybersport",
+                  "value": "false"
+                }
+              ],
+              "variable": [
+                {
+                  "type": "any",
+                  "value": "live",
+                  "key": "type",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "en",
+                  "key": "lang",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                    "type": "text/plain"
+                  }
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "a6441e96-f8c4-467f-bb01-ee3faa7555f0",
+              "name": "Sports with nested countries and tournaments.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "menu",
+                    ":type",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`true` switches the method to esports data.",
+                        "type": "text/plain"
+                      },
+                      "key": "cybersport",
+                      "value": "false"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "X-Key-Expires",
+                  "value": ""
+                }
+              ],
+              "body": "{\n  \"status\": 1,\n  \"page\": \"/v1/menu\",\n  \"body\": [\n    {\n      \"id\": 1,\n      \"name\": \"Football\",\n      \"counter\": 56,\n      \"sub\": [\n        {\n          \"id\": 208,\n          \"name\": \"Sri Lanka\",\n          \"counter\": 1,\n          \"sport_id\": 1,\n          \"sub\": [\n            {\n              \"id\": 2217395,\n              \"name\": \"Sri Lanka. Super League\",\n              \"counter\": 1,\n              \"sport_id\": 1,\n              \"countryId\": 208\n            }\n          ]\n        },\n        {\n          \"id\": 225,\n          \"name\": \"World\",\n          \"counter\": 27,\n          \"sport_id\": 1,\n          \"sub\": [\n            {\n              \"id\": 67559,\n              \"name\": \"Club Friendlies\",\n              \"counter\": 3,\n              \"sport_id\": 1,\n              \"countryId\": 225\n            },\n            {\n              \"id\": 2800655,\n              \"name\": \"Regional League. W\",\n              \"counter\": 1,\n              \"sport_id\": 1,\n              \"countryId\": 225\n            }\n          ]\n        }\n      ]\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Ice Hockey\",\n      \"counter\": 17,\n      \"sub\": [\n        {\n          \"id\": 225,\n          \"name\": \"World\",\n          \"counter\": 14,\n          \"sport_id\": 2,\n          \"sub\": [\n            {\n              \"id\": 1164241,\n              \"name\": \"Club Friendlies\",\n              \"counter\": 7,\n              \"sport_id\": 2,\n              \"countryId\": 225\n            },\n            {\n              \"id\": 44537,\n              \"name\": \"International Tournament U20\",\n              \"counter\": 1,\n              \"sport_id\": 2,\n              \"countryId\": 225\n            }\n          ]\n        }\n      ]\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "346ba9d9-1d44-4d29-8ffb-7d0d26e18679",
+              "name": "Access or parameter error (`error_code` + `error_message`). The documentation does not define the HTTP status codes of error responses, so always check the parsed JSON for `error_code`. See [Error Handling](https://sportapi.net/docs/sport-line/getting-started/error-handling.html).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "menu",
+                    ":type",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`true` switches the method to esports data.",
+                        "type": "text/plain"
+                      },
+                      "key": "cybersport",
+                      "value": "false"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error_code\": 100,\n  \"error_message\": \"Missing Package header\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "920b3823-4f48-4473-9be0-0b233c8b94e8",
+          "name": "Sport list",
+          "request": {
+            "name": "Sport list",
+            "description": {
+              "content": "Returns only the available sports. The same data is at the top level of `menu`, which is recommended for most integrations; use this method for step-by-step loading (`sports → countries → tournaments → events`).\n\n**Recommended request frequency:** Live — no more than once every 60 seconds; Prematch (`line`) — no more than once every 120 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "sports",
+                ":type",
+                ":lang"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "`true` switches the method to esports data.",
+                    "type": "text/plain"
+                  },
+                  "key": "cybersport",
+                  "value": "false"
+                }
+              ],
+              "variable": [
+                {
+                  "type": "any",
+                  "value": "live",
+                  "key": "type",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "en",
+                  "key": "lang",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                    "type": "text/plain"
+                  }
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "e2255f28-5dd2-49b1-b82d-a5e149d10b59",
+              "name": "Available sports.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "sports",
+                    ":type",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`true` switches the method to esports data.",
+                        "type": "text/plain"
+                      },
+                      "key": "cybersport",
+                      "value": "false"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "X-Key-Expires",
+                  "value": ""
+                }
+              ],
+              "body": "{\n  \"status\": 1,\n  \"page\": \"/v1/sports\",\n  \"body\": [\n    {\n      \"id\": 1,\n      \"name\": \"Football\",\n      \"counter\": 48\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Ice Hockey\",\n      \"counter\": 16\n    },\n    {\n      \"id\": 3,\n      \"name\": \"Basketball\",\n      \"counter\": 22\n    },\n    {\n      \"id\": 4,\n      \"name\": \"Tennis\",\n      \"counter\": 32\n    },\n    {\n      \"id\": 5,\n      \"name\": \"Baseball\",\n      \"counter\": 11\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a09aa368-aa5e-459e-96ac-1f3f6dac3868",
+              "name": "Access or parameter error (`error_code` + `error_message`). The documentation does not define the HTTP status codes of error responses, so always check the parsed JSON for `error_code`. See [Error Handling](https://sportapi.net/docs/sport-line/getting-started/error-handling.html).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "sports",
+                    ":type",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`true` switches the method to esports data.",
+                        "type": "text/plain"
+                      },
+                      "key": "cybersport",
+                      "value": "false"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error_code\": 100,\n  \"error_message\": \"Missing Package header\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "0e2688b3-8a64-4906-8b13-1006346d43e7",
+          "name": "Country list for a sport",
+          "request": {
+            "name": "Country list for a sport",
+            "description": {
+              "content": "Returns countries with available matches for one sport. The same countries are inside `menu`; use this method when countries are loaded only after a sport is selected.\n\n**Recommended request frequency:** Live — no more than once every 60 seconds; Prematch (`line`) — no more than once every 120 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "countries",
+                ":sportId",
+                ":type",
+                ":lang"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "type": "any",
+                  "value": "1",
+                  "key": "sportId",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Sport ID taken from a current `menu` or `sports` response for the same line type. See [Sports and `sport_id` Values](https://sportapi.net/docs/sport-line/reference/sports.html).",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "live",
+                  "key": "type",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "en",
+                  "key": "lang",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                    "type": "text/plain"
+                  }
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "a3584ec4-002b-4cfa-8cb3-a56f62ed0df3",
+              "name": "Countries for the selected sport.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "countries",
+                    ":sportId",
+                    ":type",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sport ID taken from a current `menu` or `sports` response for the same line type. See [Sports and `sport_id` Values](https://sportapi.net/docs/sport-line/reference/sports.html).",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "1",
+                      "key": "sportId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "X-Key-Expires",
+                  "value": ""
+                }
+              ],
+              "body": "{\n  \"status\": 1,\n  \"page\": \"/v1/countries\",\n  \"body\": [\n    {\n      \"id\": 2,\n      \"name\": \"Ukraine\",\n      \"sport_id\": 1,\n      \"counter\": 3\n    },\n    {\n      \"id\": 4,\n      \"name\": \"Australia\",\n      \"sport_id\": 1,\n      \"counter\": 8\n    },\n    {\n      \"id\": 9,\n      \"name\": \"Angola\",\n      \"sport_id\": 1,\n      \"counter\": 1\n    },\n    {\n      \"id\": 22,\n      \"name\": \"Belarus\",\n      \"sport_id\": 1,\n      \"counter\": 1\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "55fbb648-024f-4282-8b02-ddf93d12e538",
+              "name": "Access or parameter error (`error_code` + `error_message`). The documentation does not define the HTTP status codes of error responses, so always check the parsed JSON for `error_code`. See [Error Handling](https://sportapi.net/docs/sport-line/getting-started/error-handling.html).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "countries",
+                    ":sportId",
+                    ":type",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sport ID taken from a current `menu` or `sports` response for the same line type. See [Sports and `sport_id` Values](https://sportapi.net/docs/sport-line/reference/sports.html).",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "1",
+                      "key": "sportId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error_code\": 100,\n  \"error_message\": \"Missing Package header\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "c360ec9b-5c19-4576-b789-bd5083b2b050",
+          "name": "Tournament list for a sport and country",
+          "request": {
+            "name": "Tournament list for a sport and country",
+            "description": {
+              "content": "Returns tournaments with available matches for one sport and one country. The same tournaments are inside `menu`; use this method for step-by-step loading.\n\n**Recommended request frequency:** Live — no more than once every 60 seconds; Prematch (`line`) — no more than once every 120 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "tournaments",
+                ":sportId",
+                ":countryId",
+                ":type",
+                ":lang"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "`true` switches the method to esports data.",
+                    "type": "text/plain"
+                  },
+                  "key": "cybersport",
+                  "value": "false"
+                }
+              ],
+              "variable": [
+                {
+                  "type": "any",
+                  "value": "1",
+                  "key": "sportId",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Sport ID taken from a current `menu` or `sports` response for the same line type. See [Sports and `sport_id` Values](https://sportapi.net/docs/sport-line/reference/sports.html).",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "4",
+                  "key": "countryId",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Country ID taken from a current `menu` or `countries` response.",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "live",
+                  "key": "type",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "en",
+                  "key": "lang",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                    "type": "text/plain"
+                  }
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "9f5dea10-1ca0-4bd4-b9a7-72748c64df65",
+              "name": "Tournaments for the selected sport and country.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "tournaments",
+                    ":sportId",
+                    ":countryId",
+                    ":type",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`true` switches the method to esports data.",
+                        "type": "text/plain"
+                      },
+                      "key": "cybersport",
+                      "value": "false"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sport ID taken from a current `menu` or `sports` response for the same line type. See [Sports and `sport_id` Values](https://sportapi.net/docs/sport-line/reference/sports.html).",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "1",
+                      "key": "sportId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Country ID taken from a current `menu` or `countries` response.",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "4",
+                      "key": "countryId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "X-Key-Expires",
+                  "value": ""
+                }
+              ],
+              "body": "{\n  \"status\": 1,\n  \"page\": \"/v1/tournaments\",\n  \"body\": [\n    {\n      \"id\": 1205475,\n      \"name\": \"Australia. NPL Northern Territory\",\n      \"counter\": 1,\n      \"sport_id\": 1,\n      \"countryId\": 4\n    },\n    {\n      \"id\": 1025049,\n      \"name\": \"Australia. South Australia. State League\",\n      \"counter\": 1,\n      \"sport_id\": 1,\n      \"countryId\": 4\n    },\n    {\n      \"id\": 1195579,\n      \"name\": \"Australia. FFSA State League. Division 2\",\n      \"counter\": 1,\n      \"sport_id\": 1,\n      \"countryId\": 4\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "cde5fdfb-8bd4-447c-b1de-c8aa1867dfdf",
+              "name": "Access or parameter error (`error_code` + `error_message`). The documentation does not define the HTTP status codes of error responses, so always check the parsed JSON for `error_code`. See [Error Handling](https://sportapi.net/docs/sport-line/getting-started/error-handling.html).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "tournaments",
+                    ":sportId",
+                    ":countryId",
+                    ":type",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`true` switches the method to esports data.",
+                        "type": "text/plain"
+                      },
+                      "key": "cybersport",
+                      "value": "false"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sport ID taken from a current `menu` or `sports` response for the same line type. See [Sports and `sport_id` Values](https://sportapi.net/docs/sport-line/reference/sports.html).",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "1",
+                      "key": "sportId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Country ID taken from a current `menu` or `countries` response.",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "4",
+                      "key": "countryId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error_code\": 100,\n  \"error_message\": \"Missing Package header\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Matches",
+      "description": "Match lists, the match calendar, a specific match with all markets, and search.",
+      "item": [
+        {
+          "id": "a6c764e8-5e8e-4778-a56c-f481bea4026d",
+          "name": "Match list for a sport or tournament",
+          "request": {
+            "name": "Match list for a sport or tournament",
+            "description": {
+              "content": "Returns matches of the selected sport, grouped by tournament: main match data, teams, start time, Live score and period, a **short** list of the main markets and odds, Live statistics, video and tracker IDs. Use `event` to get the complete market list of one match.\n\n| Request | Result |\n|---|---|\n| `.../{sportId}/0/sub/50/line/{lang}` | \"Top\": 50 matches (next 24 hours first, most popular first) |\n| `.../{sportId}/0/sub/50/line/{lang}?match=all` | The full Prematch line of the sport |\n| `.../{sportId}/{tournamentId}/sub/50/line/{lang}` | All matches of the tournament |\n| `.../{sportId}/0/sub/50/live/{lang}` | All Live matches of the sport |\n\nThe \"Top\" rule does not apply to Live or to esports (`cybersport=true`). In this list `sub_games` and `event_plan` are always `[]`.\n\n**Recommended request frequency:** Live — no more than once every 7 seconds; Prematch (`line`) — no more than once every 30 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "events",
+                ":sportId",
+                ":tournamentId",
+                ":format",
+                ":count",
+                ":type",
+                ":lang"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "`true` switches the method to esports data.",
+                    "type": "text/plain"
+                  },
+                  "key": "cybersport",
+                  "value": "false"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "`all` — the full line of the sport instead of the \"Top\" selection. Only for `type=line` with `tournamentId=0`. (This can only be one of all)",
+                    "type": "text/plain"
+                  },
+                  "key": "match",
+                  "value": "all"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "`false` returns matches without `game_oc_list`; all other fields are the same and `game_oc_counter` is kept. The response is several times smaller.",
+                    "type": "text/plain"
+                  },
+                  "key": "odds",
+                  "value": "true"
+                }
+              ],
+              "variable": [
+                {
+                  "type": "any",
+                  "value": "1",
+                  "key": "sportId",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Sport ID taken from a current `menu` or `sports` response for the same line type. See [Sports and `sport_id` Values](https://sportapi.net/docs/sport-line/reference/sports.html).",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "0",
+                  "key": "tournamentId",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Tournament ID taken from a current `menu` or `tournaments` response. Pass `0` to get matches from all available tournaments of the sport.",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "sub",
+                  "key": "format",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Response format. `events` supports only `sub`, which groups matches by tournament. (This can only be one of sub)",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "50",
+                  "key": "count",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Legacy segment kept for URL compatibility. Always pass `50`: the value does not affect the response and must not be used for pagination.",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "live",
+                  "key": "type",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "en",
+                  "key": "lang",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                    "type": "text/plain"
+                  }
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "b48407d2-384e-4215-b0c7-37ea76a5c272",
+              "name": "Tournaments with nested matches. An empty `body` means no matches for the conditions.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "events",
+                    ":sportId",
+                    ":tournamentId",
+                    ":format",
+                    ":count",
+                    ":type",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`true` switches the method to esports data.",
+                        "type": "text/plain"
+                      },
+                      "key": "cybersport",
+                      "value": "false"
+                    },
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`all` — the full line of the sport instead of the \"Top\" selection. Only for `type=line` with `tournamentId=0`. (This can only be one of all)",
+                        "type": "text/plain"
+                      },
+                      "key": "match",
+                      "value": "all"
+                    },
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`false` returns matches without `game_oc_list`; all other fields are the same and `game_oc_counter` is kept. The response is several times smaller.",
+                        "type": "text/plain"
+                      },
+                      "key": "odds",
+                      "value": "true"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sport ID taken from a current `menu` or `sports` response for the same line type. See [Sports and `sport_id` Values](https://sportapi.net/docs/sport-line/reference/sports.html).",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "1",
+                      "key": "sportId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Tournament ID taken from a current `menu` or `tournaments` response. Pass `0` to get matches from all available tournaments of the sport.",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "0",
+                      "key": "tournamentId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Response format. `events` supports only `sub`, which groups matches by tournament. (This can only be one of sub)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "sub",
+                      "key": "format"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Legacy segment kept for URL compatibility. Always pass `50`: the value does not affect the response and must not be used for pagination.",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "50",
+                      "key": "count"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "X-Key-Expires",
+                  "value": ""
+                }
+              ],
+              "body": "{\n  \"status\": 1,\n  \"page\": \"/v1/events\",\n  \"body\": [\n    {\n      \"tournament_id\": 1205475,\n      \"tournament_name\": \"Australia. NPL Northern Territory\",\n      \"events_list\": [\n        {\n          \"sgame_id\": \"0\",\n          \"stat_id\": \"0\",\n          \"game_id\": 746037229,\n          \"game_mid\": 746037229,\n          \"game_num\": 250696,\n          \"game_start\": 1787310000,\n          \"country_id\": 4,\n          \"country_name\": \"Australia\",\n          \"tournament_id\": 1205475,\n          \"tournament_name\": \"Australia. NPL Northern Territory\",\n          \"opp_1_name\": \"Garuda Darwin\",\n          \"opp_2_name\": \"Darwin Olympic\",\n          \"opp_1_id\": 6515395,\n          \"opp_1_ids\": [\n            6515395\n          ],\n          \"opp_2_id\": 1780,\n          \"opp_2_ids\": [\n            1780\n          ],\n          \"opp_1_icon\": \"d0ba754f226ad8a0ac0dff084f967a7a.png\",\n          \"opp_2_icon\": \"a5ab433dc124b4daafee09a2c7c15b50.png\",\n          \"game_oc_counter\": 134,\n          \"game_oc_list\": [\n            {\n              \"group_id\": 1,\n              \"group_name\": \"1X2\",\n              \"columns\": 3,\n              \"oc_list\": [\n                {\n                  \"oc_group_name\": \"1X2\",\n                  \"oc_name\": \"W2\",\n                  \"oc_rate\": 1.064,\n                  \"oc_size\": 0,\n                  \"oc_pointer\": \"746037229|1|3|0\",\n                  \"oc_block\": false,\n                  \"op_id\": null\n                },\n                {\n                  \"oc_group_name\": \"1X2\",\n                  \"oc_name\": \"X\",\n                  \"oc_rate\": 10,\n                  \"oc_size\": 0,\n                  \"oc_pointer\": \"746037229|1|2|0\",\n                  \"oc_block\": false,\n                  \"op_id\": null\n                },\n                {\n                  \"oc_group_name\": \"1X2\",\n                  \"oc_name\": \"W1\",\n                  \"oc_rate\": 27,\n                  \"oc_size\": 0,\n                  \"oc_pointer\": \"746037229|1|1|0\",\n                  \"oc_block\": false,\n                  \"op_id\": null\n                }\n              ]\n            },\n            {\n              \"group_id\": 2,\n              \"group_name\": \"Handicap\",\n              \"columns\": 2,\n              \"oc_list\": [\n                {\n                  \"oc_group_name\": \"Handicap\",\n                  \"oc_name\": \"1 1.5\",\n                  \"oc_rate\": 1.69,\n                  \"oc_size\": \"1.5\",\n                  \"oc_pointer\": \"746037229|2|7|1.5\",\n                  \"oc_block\": false,\n                  \"op_id\": null\n                },\n                {\n                  \"oc_group_name\": \"Handicap\",\n                  \"oc_name\": \"2 -1.5\",\n                  \"oc_rate\": 2.17,\n                  \"oc_size\": \"-1.5\",\n                  \"oc_pointer\": \"746037229|2|8|-1.5\",\n                  \"oc_block\": false,\n                  \"op_id\": null\n                }\n              ]\n            }\n          ],\n          \"sport_id\": 1,\n          \"sport_name\": \"Football\",\n          \"timer\": 4617,\n          \"score_full\": \"0:1\",\n          \"score_period\": \"0:1;0:0\",\n          \"stat_list\": [\n            {\n              \"id\": 45,\n              \"name\": \"Attacks\",\n              \"opp1\": \"62\",\n              \"opp2\": \"58\"\n            },\n            {\n              \"id\": 58,\n              \"name\": \"Dangerous attacks\",\n              \"opp1\": \"36\",\n              \"opp2\": \"56\"\n            },\n            {\n              \"id\": 29,\n              \"name\": \"Possession %\",\n              \"opp1\": \"42\",\n              \"opp2\": \"58\"\n            },\n            {\n              \"id\": 59,\n              \"name\": \"Shots on target\",\n              \"opp1\": \"2\",\n              \"opp2\": \"4\"\n            }\n          ],\n          \"extra_time\": \"\",\n          \"finale\": false,\n          \"pitch\": \"\",\n          \"sub_games\": [],\n          \"event_plan\": [],\n          \"period_name\": \"2nd half\",\n          \"game_desk\": \"Half\",\n          \"score_extra\": \"\",\n          \"game_dop_name\": \"\",\n          \"va\": 1,\n          \"vi\": \"DR_2_1783062440\",\n          \"zp\": 746037229,\n          \"game_plan\": null,\n          \"stat_list_extra\": []\n        }\n      ]\n    },\n    {\n      \"tournament_id\": 16655,\n      \"tournament_name\": \"Hong Kong. Premier League\",\n      \"events_list\": [\n        {\n          \"sgame_id\": \"6a804f877762417de82f3f9c\",\n          \"stat_id\": \"6a804f877762417de82f3f9d\",\n          \"game_id\": 746049398,\n          \"game_mid\": 746049398,\n          \"game_num\": 205810,\n          \"game_start\": 1787313600,\n          \"country_id\": 57,\n          \"country_name\": \"Hong Kong\",\n          \"tournament_id\": 16655,\n          \"tournament_name\": \"Hong Kong. Premier League\",\n          \"opp_1_name\": \"Eastern Sports Club\",\n          \"opp_2_name\": \"Shatin\",\n          \"opp_1_id\": 34203,\n          \"opp_1_ids\": [\n            34203\n          ],\n          \"opp_2_id\": 32433,\n          \"opp_2_ids\": [\n            32433\n          ],\n          \"opp_1_icon\": \"34203.png\",\n          \"opp_2_icon\": \"32433.png\",\n          \"game_oc_counter\": 370,\n          \"game_oc_list\": [\n            {\n              \"group_id\": 1,\n              \"group_name\": \"1X2\",\n              \"columns\": 3,\n              \"oc_list\": [\n                {\n                  \"oc_group_name\": \"1X2\",\n                  \"oc_name\": \"W1\",\n                  \"oc_rate\": 1.19,\n                  \"oc_size\": 0,\n                  \"oc_pointer\": \"746049398|1|1|0\",\n                  \"oc_block\": false,\n                  \"op_id\": null\n                },\n                {\n                  \"oc_group_name\": \"1X2\",\n                  \"oc_name\": \"X\",\n                  \"oc_rate\": 7.08,\n                  \"oc_size\": 0,\n                  \"oc_pointer\": \"746049398|1|2|0\",\n                  \"oc_block\": false,\n                  \"op_id\": null\n                },\n                {\n                  \"oc_group_name\": \"1X2\",\n                  \"oc_name\": \"W2\",\n                  \"oc_rate\": 11.3,\n                  \"oc_size\": 0,\n                  \"oc_pointer\": \"746049398|1|3|0\",\n                  \"oc_block\": false,\n                  \"op_id\": null\n                }\n              ]\n            },\n            {\n              \"group_id\": 8,\n              \"group_name\": \"Double Chance\",\n              \"columns\": 3,\n              \"oc_list\": [\n                {\n                  \"oc_group_name\": \"Double Chance\",\n                  \"oc_name\": \"1X\",\n                  \"oc_rate\": 1.025,\n                  \"oc_size\": 0,\n                  \"oc_pointer\": \"746049398|8|4|0\",\n                  \"oc_block\": false,\n                  \"op_id\": null\n                },\n                {\n                  \"oc_group_name\": \"Double Chance\",\n                  \"oc_name\": \"12\",\n                  \"oc_rate\": 1.08,\n                  \"oc_size\": 0,\n                  \"oc_pointer\": \"746049398|8|5|0\",\n                  \"oc_block\": false,\n                  \"op_id\": null\n                },\n                {\n                  \"oc_group_name\": \"Double Chance\",\n                  \"oc_name\": \"2X\",\n                  \"oc_rate\": 4.37,\n                  \"oc_size\": 0,\n                  \"oc_pointer\": \"746049398|8|6|0\",\n                  \"oc_block\": false,\n                  \"op_id\": null\n                }\n              ]\n            }\n          ],\n          \"sport_id\": 1,\n          \"sport_name\": \"Football\",\n          \"timer\": 2213,\n          \"score_full\": \"1:0\",\n          \"score_period\": \"1:0\",\n          \"stat_list\": [\n            {\n              \"id\": 45,\n              \"name\": \"Attacks\",\n              \"opp1\": \"37\",\n              \"opp2\": \"40\"\n            },\n            {\n              \"id\": 58,\n              \"name\": \"Dangerous attacks\",\n              \"opp1\": \"17\",\n              \"opp2\": \"24\"\n            },\n            {\n              \"id\": 29,\n              \"name\": \"Possession %\",\n              \"opp1\": \"61\",\n              \"opp2\": \"39\"\n            },\n            {\n              \"id\": 59,\n              \"name\": \"Shots on target\",\n              \"opp1\": \"4\",\n              \"opp2\": \"1\"\n            }\n          ],\n          \"extra_time\": \"\",\n          \"finale\": false,\n          \"pitch\": \"\",\n          \"sub_games\": [],\n          \"event_plan\": [],\n          \"period_name\": \"1st half\",\n          \"game_desk\": \"Half\",\n          \"score_extra\": \"\",\n          \"game_dop_name\": \"\",\n          \"va\": null,\n          \"vi\": null,\n          \"zp\": 746049398,\n          \"game_plan\": null,\n          \"stat_list_extra\": []\n        }\n      ]\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f5178701-880c-448e-b224-c4fa01372193",
+              "name": "Access or parameter error (`error_code` + `error_message`). The documentation does not define the HTTP status codes of error responses, so always check the parsed JSON for `error_code`. See [Error Handling](https://sportapi.net/docs/sport-line/getting-started/error-handling.html).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "events",
+                    ":sportId",
+                    ":tournamentId",
+                    ":format",
+                    ":count",
+                    ":type",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`true` switches the method to esports data.",
+                        "type": "text/plain"
+                      },
+                      "key": "cybersport",
+                      "value": "false"
+                    },
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`all` — the full line of the sport instead of the \"Top\" selection. Only for `type=line` with `tournamentId=0`. (This can only be one of all)",
+                        "type": "text/plain"
+                      },
+                      "key": "match",
+                      "value": "all"
+                    },
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`false` returns matches without `game_oc_list`; all other fields are the same and `game_oc_counter` is kept. The response is several times smaller.",
+                        "type": "text/plain"
+                      },
+                      "key": "odds",
+                      "value": "true"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sport ID taken from a current `menu` or `sports` response for the same line type. See [Sports and `sport_id` Values](https://sportapi.net/docs/sport-line/reference/sports.html).",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "1",
+                      "key": "sportId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Tournament ID taken from a current `menu` or `tournaments` response. Pass `0` to get matches from all available tournaments of the sport.",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "0",
+                      "key": "tournamentId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Response format. `events` supports only `sub`, which groups matches by tournament. (This can only be one of sub)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "sub",
+                      "key": "format"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Legacy segment kept for URL compatibility. Always pass `50`: the value does not affect the response and must not be used for pagination.",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "50",
+                      "key": "count"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error_code\": 100,\n  \"error_message\": \"Missing Package header\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "08c9fd39-35d6-4378-b622-191e69c1c489",
+          "name": "Match calendar (Prematch by period)",
+          "request": {
+            "name": "Match calendar (Prematch by period)",
+            "description": {
+              "content": "Returns Prematch matches that start within the selected period: the next 2, 4, 6 or 12 hours, today, or a specific day up to 5 days ahead. It is the `events` method with two extra path segments and the same response structure.\n\n| `hours` | `days` | Matches returned |\n|---|---|---|\n| `2`, `4`, `6`, `12` | any | From now until now + N hours (`days` is ignored) |\n| `0` | `0` | Today: from now until the end of the day |\n| `0` | `1`…`5` | That calendar day only, 00:00–24:00 (`1` — tomorrow) |\n| `0` | greater than `5` | Empty list |\n\nDays follow Kyiv time (`Europe/Kyiv`). Other `hours` values (for example `3`) do not cause an error — the period is then defined by `days`. Matches that have already started are not included. The \"Top\" rule does not apply: all matches of the period are returned. Esports are not supported.\n\n**Recommended request frequency:** no more than once every 60 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "events",
+                ":sportId",
+                ":tournamentId",
+                ":format",
+                ":count",
+                "line",
+                ":hours",
+                ":days",
+                ":lang"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "`false` returns matches without `game_oc_list`; all other fields are the same and `game_oc_counter` is kept. The response is several times smaller.",
+                    "type": "text/plain"
+                  },
+                  "key": "odds",
+                  "value": "true"
+                }
+              ],
+              "variable": [
+                {
+                  "type": "any",
+                  "value": "1",
+                  "key": "sportId",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Sport ID taken from a current `menu` or `sports` response for the same line type. See [Sports and `sport_id` Values](https://sportapi.net/docs/sport-line/reference/sports.html).",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "0",
+                  "key": "tournamentId",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Tournament ID taken from a current `menu` or `tournaments` response. Pass `0` to get matches from all available tournaments of the sport.",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "sub",
+                  "key": "format",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Response format. `events` supports only `sub`, which groups matches by tournament. (This can only be one of sub)",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "50",
+                  "key": "count",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Legacy segment kept for URL compatibility. Always pass `50`: the value does not affect the response and must not be used for pagination.",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "2",
+                  "key": "hours",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Period in hours from now: `2`, `4`, `6` or `12`. `0` — the period is set by `days`.",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "0",
+                  "key": "days",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Day: `0` — today until the end of the day, `1` — tomorrow, … `5`.",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "en",
+                  "key": "lang",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                    "type": "text/plain"
+                  }
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "a92d285f-ca2a-4c03-9753-a6a50dc91bd1",
+              "name": "Tournaments with nested matches of the period. An empty `body` means no matches in the period.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "events",
+                    ":sportId",
+                    ":tournamentId",
+                    ":format",
+                    ":count",
+                    "line",
+                    ":hours",
+                    ":days",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`false` returns matches without `game_oc_list`; all other fields are the same and `game_oc_counter` is kept. The response is several times smaller.",
+                        "type": "text/plain"
+                      },
+                      "key": "odds",
+                      "value": "true"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sport ID taken from a current `menu` or `sports` response for the same line type. See [Sports and `sport_id` Values](https://sportapi.net/docs/sport-line/reference/sports.html).",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "1",
+                      "key": "sportId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Tournament ID taken from a current `menu` or `tournaments` response. Pass `0` to get matches from all available tournaments of the sport.",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "0",
+                      "key": "tournamentId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Response format. `events` supports only `sub`, which groups matches by tournament. (This can only be one of sub)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "sub",
+                      "key": "format"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Legacy segment kept for URL compatibility. Always pass `50`: the value does not affect the response and must not be used for pagination.",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "50",
+                      "key": "count"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Period in hours from now: `2`, `4`, `6` or `12`. `0` — the period is set by `days`.",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "2",
+                      "key": "hours"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Day: `0` — today until the end of the day, `1` — tomorrow, … `5`.",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "0",
+                      "key": "days"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "X-Key-Expires",
+                  "value": ""
+                }
+              ],
+              "body": "{\n  \"status\": 1,\n  \"page\": \"/v1/events\",\n  \"body\": [\n    {\n      \"tournament_id\": 1706694,\n      \"tournament_name\": \"UEFA Nations League\",\n      \"events_list\": [\n        {\n          \"game_id\": 758182302,\n          \"game_start\": 1791295200,\n          \"opp_1_name\": \"Kazakhstan\",\n          \"opp_2_name\": \"Faroe Islands\",\n          \"game_oc_counter\": 1261\n        }\n      ]\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "61c42ff8-941c-4450-933d-a3981dd6ec78",
+              "name": "Access or parameter error (`error_code` + `error_message`). The documentation does not define the HTTP status codes of error responses, so always check the parsed JSON for `error_code`. See [Error Handling](https://sportapi.net/docs/sport-line/getting-started/error-handling.html).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "events",
+                    ":sportId",
+                    ":tournamentId",
+                    ":format",
+                    ":count",
+                    "line",
+                    ":hours",
+                    ":days",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`false` returns matches without `game_oc_list`; all other fields are the same and `game_oc_counter` is kept. The response is several times smaller.",
+                        "type": "text/plain"
+                      },
+                      "key": "odds",
+                      "value": "true"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sport ID taken from a current `menu` or `sports` response for the same line type. See [Sports and `sport_id` Values](https://sportapi.net/docs/sport-line/reference/sports.html).",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "1",
+                      "key": "sportId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Tournament ID taken from a current `menu` or `tournaments` response. Pass `0` to get matches from all available tournaments of the sport.",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "0",
+                      "key": "tournamentId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Response format. `events` supports only `sub`, which groups matches by tournament. (This can only be one of sub)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "sub",
+                      "key": "format"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Legacy segment kept for URL compatibility. Always pass `50`: the value does not affect the response and must not be used for pagination.",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "50",
+                      "key": "count"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Period in hours from now: `2`, `4`, `6` or `12`. `0` — the period is set by `days`.",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "2",
+                      "key": "hours"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Day: `0` — today until the end of the day, `1` — tomorrow, … `5`.",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "0",
+                      "key": "days"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error_code\": 100,\n  \"error_message\": \"Missing Package header\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "4ec45c50-a098-410c-8e61-d3c1ab9f3782",
+          "name": "Specific match with the complete market list",
+          "request": {
+            "name": "Specific match with the complete market list",
+            "description": {
+              "content": "Returns detailed data for one match or sub-match: the complete available market list in the `group` format (markets → columns → selections, already sorted), Live statistics, the `sub_games` list of sub-matches, `event_plan` for group matches, video and tracker IDs.\n\nTo get the odds of a sub-match (corners, a half, cards…), call this method again with the sub-match `game_id` from `sub_games`. Request an ID with the same line type it came from.\n\nIf the match is no longer available, `body` contains only `message` (`Game not found` or `Game id finished`) — check for it before parsing match fields.\n\n**Recommended request frequency:** Live — no more than once every 5 seconds; Prematch (`line`) — no more than once every 30 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "event",
+                ":gameId",
+                "group",
+                ":type",
+                ":lang"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "`false` returns matches without `game_oc_list`; all other fields are the same and `game_oc_counter` is kept. The response is several times smaller.",
+                    "type": "text/plain"
+                  },
+                  "key": "odds",
+                  "value": "true"
+                }
+              ],
+              "variable": [
+                {
+                  "type": "any",
+                  "value": "746146992",
+                  "key": "gameId",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Match or sub-match ID (`game_id`) from `events` or `sub_games`, requested with the same line type it was obtained from.",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "live",
+                  "key": "type",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "en",
+                  "key": "lang",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                    "type": "text/plain"
+                  }
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "64748bf0-48a2-43e3-be12-2ef485c4e6fe",
+              "name": "A match object, or a service message in `body.message`.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "event",
+                    ":gameId",
+                    "group",
+                    ":type",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`false` returns matches without `game_oc_list`; all other fields are the same and `game_oc_counter` is kept. The response is several times smaller.",
+                        "type": "text/plain"
+                      },
+                      "key": "odds",
+                      "value": "true"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Match or sub-match ID (`game_id`) from `events` or `sub_games`, requested with the same line type it was obtained from.",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "746146992",
+                      "key": "gameId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "X-Key-Expires",
+                  "value": ""
+                }
+              ],
+              "body": "{\n  \"status\": 1,\n  \"page\": \"/v1/event\",\n  \"body\": {\n    \"sgame_id\": \"6a35079e5e99bd05c63e9101\",\n    \"stat_id\": \"6a34c3a75e99bd05c63e703a\",\n    \"game_id\": 746146992,\n    \"game_mid\": 746146992,\n    \"game_num\": 150078,\n    \"game_start\": 1787338800,\n    \"country_id\": 231,\n    \"country_name\": \"England\",\n    \"tournament_id\": 88637,\n    \"tournament_name\": \"England. Premier League\",\n    \"opp_1_name\": \"Arsenal\",\n    \"opp_2_name\": \"Coventry City\",\n    \"opp_1_id\": 50679,\n    \"opp_1_ids\": [\n      50679\n    ],\n    \"opp_2_id\": 2074,\n    \"opp_2_ids\": [\n      2074\n    ],\n    \"opp_1_icon\": \"08a25897e35d75d7261a8095b9599aad.png\",\n    \"opp_2_icon\": \"2074.png\",\n    \"game_oc_counter\": 278,\n    \"game_oc_list\": [\n      {\n        \"group_id\": 19,\n        \"group_name\": \"Both Teams To Score\",\n        \"columns\": 2,\n        \"oc_list\": [\n          [\n            {\n              \"oc_group_name\": \"Both Teams To Score\",\n              \"oc_name\": \"Yes\",\n              \"oc_rate\": 3.336,\n              \"oc_size\": 0,\n              \"oc_pointer\": \"746146992|19|180|0\",\n              \"oc_block\": false,\n              \"op_id\": null\n            }\n          ],\n          [\n            {\n              \"oc_group_name\": \"Both Teams To Score\",\n              \"oc_name\": \"No\",\n              \"oc_rate\": 1.33,\n              \"oc_size\": 0,\n              \"oc_pointer\": \"746146992|19|181|0\",\n              \"oc_block\": false,\n              \"op_id\": null\n            }\n          ]\n        ]\n      },\n      {\n        \"group_id\": 17,\n        \"group_name\": \"Total\",\n        \"columns\": 2,\n        \"oc_list\": [\n          [\n            {\n              \"oc_group_name\": \"Total\",\n              \"oc_name\": \"Over 3.5\",\n              \"oc_rate\": 1.23,\n              \"oc_size\": \"3.5\",\n              \"oc_pointer\": \"746146992|17|9|3.5\",\n              \"oc_block\": false,\n              \"op_id\": null\n            },\n            {\n              \"oc_group_name\": \"Total\",\n              \"oc_name\": \"Over 4\",\n              \"oc_rate\": 1.435,\n              \"oc_size\": \"4\",\n              \"oc_pointer\": \"746146992|17|9|4\",\n              \"oc_block\": false,\n              \"op_id\": null\n            },\n            {\n              \"oc_group_name\": \"Total\",\n              \"oc_name\": \"Over 4.5\",\n              \"oc_rate\": 2.09,\n              \"oc_size\": \"4.5\",\n              \"oc_pointer\": \"746146992|17|9|4.5\",\n              \"oc_block\": false,\n              \"op_id\": null\n            }\n          ],\n          [\n            {\n              \"oc_group_name\": \"Total\",\n              \"oc_name\": \"Under 3.5\",\n              \"oc_rate\": 4.25,\n              \"oc_size\": \"3.5\",\n              \"oc_pointer\": \"746146992|17|10|3.5\",\n              \"oc_block\": false,\n              \"op_id\": null\n            },\n            {\n              \"oc_group_name\": \"Total\",\n              \"oc_name\": \"Under 4\",\n              \"oc_rate\": 2.848,\n              \"oc_size\": \"4\",\n              \"oc_pointer\": \"746146992|17|10|4\",\n              \"oc_block\": false,\n              \"op_id\": null\n            },\n            {\n              \"oc_group_name\": \"Total\",\n              \"oc_name\": \"Under 4.5\",\n              \"oc_rate\": 1.81,\n              \"oc_size\": \"4.5\",\n              \"oc_pointer\": \"746146992|17|10|4.5\",\n              \"oc_block\": false,\n              \"op_id\": null\n            }\n          ]\n        ]\n      },\n      {\n        \"group_id\": 2,\n        \"group_name\": \"Handicap\",\n        \"columns\": 2,\n        \"oc_list\": [\n          [\n            {\n              \"oc_group_name\": \"Handicap\",\n              \"oc_name\": \"1 -5.5\",\n              \"oc_rate\": 8.25,\n              \"oc_size\": \"-5.5\",\n              \"oc_pointer\": \"746146992|2|7|-5.5\",\n              \"oc_block\": false,\n              \"op_id\": null\n            },\n            {\n              \"oc_group_name\": \"Handicap\",\n              \"oc_name\": \"1 -5\",\n              \"oc_rate\": 6.77,\n              \"oc_size\": \"-5\",\n              \"oc_pointer\": \"746146992|2|7|-5\",\n              \"oc_block\": false,\n              \"op_id\": null\n            },\n            {\n              \"oc_group_name\": \"Handicap\",\n              \"oc_name\": \"1 -4.5\",\n              \"oc_rate\": 3.096,\n              \"oc_size\": \"-4.5\",\n              \"oc_pointer\": \"746146992|2|7|-4.5\",\n              \"oc_block\": false,\n              \"op_id\": null\n            }\n          ],\n          [\n            {\n              \"oc_group_name\": \"Handicap\",\n              \"oc_name\": \"2 5.5\",\n              \"oc_rate\": 1.075,\n              \"oc_size\": \"5.5\",\n              \"oc_pointer\": \"746146992|2|8|5.5\",\n              \"oc_block\": false,\n              \"op_id\": null\n            },\n            {\n              \"oc_group_name\": \"Handicap\",\n              \"oc_name\": \"2 5\",\n              \"oc_rate\": 1.104,\n              \"oc_size\": \"5\",\n              \"oc_pointer\": \"746146992|2|8|5\",\n              \"oc_block\": false,\n              \"op_id\": null\n            },\n            {\n              \"oc_group_name\": \"Handicap\",\n              \"oc_name\": \"2 4.5\",\n              \"oc_rate\": 1.37,\n              \"oc_size\": \"4.5\",\n              \"oc_pointer\": \"746146992|2|8|4.5\",\n              \"oc_block\": false,\n              \"op_id\": null\n            }\n          ]\n        ]\n      }\n    ],\n    \"sport_id\": 1,\n    \"sport_name\": \"Football\",\n    \"timer\": 3376,\n    \"score_full\": \"3:0\",\n    \"score_period\": \"2:0;1:0\",\n    \"stat_list\": [\n      {\n        \"id\": 93,\n        \"name\": \"xG\",\n        \"opp1\": \"1.45\",\n        \"opp2\": \"0.03\"\n      },\n      {\n        \"id\": 45,\n        \"name\": \"Attacks\",\n        \"opp1\": \"61\",\n        \"opp2\": \"54\"\n      },\n      {\n        \"id\": 58,\n        \"name\": \"Dangerous attacks\",\n        \"opp1\": \"44\",\n        \"opp2\": \"19\"\n      },\n      {\n        \"id\": 29,\n        \"name\": \"Possession %\",\n        \"opp1\": \"65\",\n        \"opp2\": \"35\"\n      }\n    ],\n    \"extra_time\": \"\",\n    \"finale\": false,\n    \"pitch\": \"\",\n    \"sub_games\": [\n      {\n        \"game_id\": 746147013,\n        \"game_num\": 150080,\n        \"game_name\": \"2nd half\"\n      },\n      {\n        \"game_id\": 746147010,\n        \"game_num\": 205978,\n        \"game_name\": \"Corners\"\n      },\n      {\n        \"game_id\": 746147037,\n        \"game_num\": 207011,\n        \"game_name\": \"Quick events\"\n      }\n    ],\n    \"event_plan\": [],\n    \"period_name\": \"period\",\n    \"game_desk\": \"\",\n    \"score_extra\": \"\",\n    \"game_dop_name\": \"\",\n    \"va\": null,\n    \"vi\": null,\n    \"zp\": 746146992,\n    \"game_plan\": null,\n    \"stat_list_extra\": []\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "fd126f84-1ced-46e5-88fa-d7be68ecb9c1",
+              "name": "Access or parameter error (`error_code` + `error_message`). The documentation does not define the HTTP status codes of error responses, so always check the parsed JSON for `error_code`. See [Error Handling](https://sportapi.net/docs/sport-line/getting-started/error-handling.html).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "event",
+                    ":gameId",
+                    "group",
+                    ":type",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`false` returns matches without `game_oc_list`; all other fields are the same and `game_oc_counter` is kept. The response is several times smaller.",
+                        "type": "text/plain"
+                      },
+                      "key": "odds",
+                      "value": "true"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Match or sub-match ID (`game_id`) from `events` or `sub_games`, requested with the same line type it was obtained from.",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "746146992",
+                      "key": "gameId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error_code\": 100,\n  \"error_message\": \"Missing Package header\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "c4783858-ea2d-455c-b506-b71d7c33ad9e",
+          "name": "Search matches by team or participant name",
+          "request": {
+            "name": "Search matches by team or participant name",
+            "description": {
+              "content": "Finds matches by a full or partial team or participant name, written in the language given by `lang`. Live and Prematch are searched separately. Returns a flat list of short summaries without odds; SportAPI determines the matches and their order. An empty `body` means nothing was found.\n\nRun it in response to a user action; it does not need a background update loop.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "search",
+                ":type",
+                ":lang",
+                ":text"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "type": "any",
+                  "value": "live",
+                  "key": "type",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "en",
+                  "key": "lang",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "Manchester",
+                  "key": "text",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Full or partial team name, URL-encoded (for example `Manchester%20City`).",
+                    "type": "text/plain"
+                  }
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "db2c61e0-c123-403c-8991-c84140471a6c",
+              "name": "Matching matches.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "search",
+                    ":type",
+                    ":lang",
+                    ":text"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Full or partial team name, URL-encoded (for example `Manchester%20City`).",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "Manchester",
+                      "key": "text"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "X-Key-Expires",
+                  "value": ""
+                }
+              ],
+              "body": "{\n  \"status\": 1,\n  \"page\": \"/v1/search\",\n  \"body\": [\n    {\n      \"sgame_id\": \"69a6e9d05e99bd05c6f13963\",\n      \"stat_id\": \"699986ec5e99bd05c6ea5357\",\n      \"game_id\": 746266480,\n      \"game_mid\": 746266480,\n      \"game_start\": 1787382000,\n      \"tournament_id\": 980455,\n      \"tournament_name\": \"Australia. NPL. Western Australia\",\n      \"opp_1_name\": \"Armadale\",\n      \"opp_2_name\": \"Perth RedStar\",\n      \"opp_1_icon\": \"398cfbf18abf67a8a1a27bbe2fc0b250.png\",\n      \"opp_2_icon\": \"1c1a28702cd883376ed2516e4b123de6.png\",\n      \"sport_id\": 1,\n      \"sport_name\": \"Football\",\n      \"score_full\": \"0:3\",\n      \"period_name\": \"period\",\n      \"timer\": 4501,\n      \"country_id\": 4,\n      \"country_name\": \"Australia\"\n    },\n    {\n      \"sgame_id\": \"69a6e9d25e99bd05c6f13975\",\n      \"stat_id\": \"699986ec5e99bd05c6ea5357\",\n      \"game_id\": 746266481,\n      \"game_mid\": 746266481,\n      \"game_start\": 1787382000,\n      \"tournament_id\": 980455,\n      \"tournament_name\": \"Australia. NPL. Western Australia\",\n      \"opp_1_name\": \"Perth\",\n      \"opp_2_name\": \"Sorrento\",\n      \"opp_1_icon\": \"be4814791502d39f2de7bee35e685f19.png\",\n      \"opp_2_icon\": \"698744afccc4b93b72b90cbeba71ac6c.png\",\n      \"sport_id\": 1,\n      \"sport_name\": \"Football\",\n      \"score_full\": \"2:0\",\n      \"period_name\": \"period\",\n      \"timer\": 4452,\n      \"country_id\": 4,\n      \"country_name\": \"Australia\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "e0f6583b-3d1a-48a1-9b15-f09393e8b58f",
+              "name": "Access or parameter error (`error_code` + `error_message`). The documentation does not define the HTTP status codes of error responses, so always check the parsed JSON for `error_code`. See [Error Handling](https://sportapi.net/docs/sport-line/getting-started/error-handling.html).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "search",
+                    ":type",
+                    ":lang",
+                    ":text"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Full or partial team name, URL-encoded (for example `Manchester%20City`).",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "Manchester",
+                      "key": "text"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error_code\": 100,\n  \"error_message\": \"Missing Package header\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Top selections",
+      "description": "Ready-made selections of popular matches and championships.",
+      "item": [
+        {
+          "id": "3754ad63-9e82-4b6c-9818-3dcb6299b5c0",
+          "name": "Top Prematch matches for one sport",
+          "request": {
+            "name": "Top Prematch matches for one sport",
+            "description": {
+              "content": "Returns a ready-made selection of up to 10 top Prematch matches for one sport (flat list). There is no `type` parameter: the method works with Prematch only — use `topmatches` for Live. SportAPI determines the contents and order.\n\n**Recommended request frequency:** no more than once every 120 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "toplist",
+                ":sportId",
+                ":lang"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "`true` returns extended match objects (teams, country, tournament and a **short** odds list) instead of short summaries. It does not return the full odds list — use `event` for that.",
+                    "type": "text/plain"
+                  },
+                  "key": "full",
+                  "value": "false"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Only matters together with `full=true`: `full=true&odds=false` returns the extended match objects without `game_oc_list`.",
+                    "type": "text/plain"
+                  },
+                  "key": "odds",
+                  "value": "true"
+                }
+              ],
+              "variable": [
+                {
+                  "type": "any",
+                  "value": "1",
+                  "key": "sportId",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Sport ID taken from a current `menu` or `sports` response for the same line type. See [Sports and `sport_id` Values](https://sportapi.net/docs/sport-line/reference/sports.html).",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "en",
+                  "key": "lang",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                    "type": "text/plain"
+                  }
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "b6088966-1fca-4e1a-b119-9ad6a4688c0d",
+              "name": "Top matches: short summaries, or extended objects with `full=true`.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "toplist",
+                    ":sportId",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`true` returns extended match objects (teams, country, tournament and a **short** odds list) instead of short summaries. It does not return the full odds list — use `event` for that.",
+                        "type": "text/plain"
+                      },
+                      "key": "full",
+                      "value": "false"
+                    },
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "Only matters together with `full=true`: `full=true&odds=false` returns the extended match objects without `game_oc_list`.",
+                        "type": "text/plain"
+                      },
+                      "key": "odds",
+                      "value": "true"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sport ID taken from a current `menu` or `sports` response for the same line type. See [Sports and `sport_id` Values](https://sportapi.net/docs/sport-line/reference/sports.html).",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "1",
+                      "key": "sportId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "X-Key-Expires",
+                  "value": ""
+                }
+              ],
+              "body": "{\n  \"status\": 1,\n  \"page\": \"/v1/toplist\",\n  \"body\": [\n    {\n      \"sgame_id\": \"6a35079e5e99bd05c63e9104\",\n      \"stat_id\": \"6a34c3a75e99bd05c63e703a\",\n      \"game_id\": 730328424,\n      \"game_mid\": 730328424,\n      \"game_start\": 1787398200,\n      \"tournament_name\": \"England. Premier League\",\n      \"opp_1_name\": \"Hull City\",\n      \"opp_2_name\": \"Manchester United\",\n      \"opp_1_icon\": \"715c2f5d95d5a5a03bdb4d4e11bbd696.png\",\n      \"opp_2_icon\": \"1996.png\",\n      \"sport_id\": 1,\n      \"sport_name\": \"Football\",\n      \"score_full\": \"0:0\",\n      \"period_name\": \"\",\n      \"timer\": 0,\n      \"va\": null,\n      \"vi\": null,\n      \"zp\": null\n    },\n    {\n      \"sgame_id\": \"6a24a7dd5e99bd05c636d2bf\",\n      \"stat_id\": \"6a24a7dd5e99bd05c636d2d1\",\n      \"game_id\": 730330581,\n      \"game_mid\": 730330581,\n      \"game_start\": 1787416200,\n      \"tournament_name\": \"Italy. Serie A\",\n      \"opp_1_name\": \"Internazionale Milano\",\n      \"opp_2_name\": \"Monza 1912\",\n      \"opp_1_icon\": \"26e4a6de8e5461081e99ee9feda21a56.png\",\n      \"opp_2_icon\": \"2f0d1152e896d9ead623347d79dd9e59.png\",\n      \"sport_id\": 1,\n      \"sport_name\": \"Football\",\n      \"score_full\": \"0:0\",\n      \"period_name\": \"\",\n      \"timer\": 0,\n      \"va\": null,\n      \"vi\": null,\n      \"zp\": null\n    },\n    {\n      \"sgame_id\": \"6a4951625e99bd05c648553e\",\n      \"stat_id\": \"6a44f21b5e99bd05c646499a\",\n      \"game_id\": 744308559,\n      \"game_mid\": 744308559,\n      \"game_start\": 1787427000,\n      \"tournament_name\": \"Spain. La Liga\",\n      \"opp_1_name\": \"Espanyol\",\n      \"opp_2_name\": \"Real Madrid\",\n      \"opp_1_icon\": \"24a303cdc0a24b99485aebc26ff13f55.png\",\n      \"opp_2_icon\": \"65e3e972954419765c3ce21698edf6cb.png\",\n      \"sport_id\": 1,\n      \"sport_name\": \"Football\",\n      \"score_full\": \"0:0\",\n      \"period_name\": \"\",\n      \"timer\": 0,\n      \"va\": null,\n      \"vi\": null,\n      \"zp\": null\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "2932b5d4-b3b6-44b2-8413-daad7b4c543b",
+              "name": "Access or parameter error (`error_code` + `error_message`). The documentation does not define the HTTP status codes of error responses, so always check the parsed JSON for `error_code`. See [Error Handling](https://sportapi.net/docs/sport-line/getting-started/error-handling.html).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "toplist",
+                    ":sportId",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`true` returns extended match objects (teams, country, tournament and a **short** odds list) instead of short summaries. It does not return the full odds list — use `event` for that.",
+                        "type": "text/plain"
+                      },
+                      "key": "full",
+                      "value": "false"
+                    },
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "Only matters together with `full=true`: `full=true&odds=false` returns the extended match objects without `game_oc_list`.",
+                        "type": "text/plain"
+                      },
+                      "key": "odds",
+                      "value": "true"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sport ID taken from a current `menu` or `sports` response for the same line type. See [Sports and `sport_id` Values](https://sportapi.net/docs/sport-line/reference/sports.html).",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "1",
+                      "key": "sportId"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error_code\": 100,\n  \"error_message\": \"Missing Package header\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "85a127bd-dfe7-4b48-b816-dc4fb09943b4",
+          "name": "Top matches across all sports",
+          "request": {
+            "name": "Top matches across all sports",
+            "description": {
+              "content": "Returns a ready-made selection of up to 10 top matches across all sports available to the key — for a \"Top Matches\" block on a home page. Live and Prematch use separate selections. The response `page` is currently `/v1/topmathes` (sic).\n\n**Recommended request frequency:** Live — no more than once every 30 seconds; Prematch (`line`) — no more than once every 120 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "topmatches",
+                ":type",
+                ":lang"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "`true` returns extended match objects (teams, country, tournament and a **short** odds list) instead of short summaries. It does not return the full odds list — use `event` for that.",
+                    "type": "text/plain"
+                  },
+                  "key": "full",
+                  "value": "false"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "Only matters together with `full=true`: `full=true&odds=false` returns the extended match objects without `game_oc_list`.",
+                    "type": "text/plain"
+                  },
+                  "key": "odds",
+                  "value": "true"
+                }
+              ],
+              "variable": [
+                {
+                  "type": "any",
+                  "value": "live",
+                  "key": "type",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "en",
+                  "key": "lang",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                    "type": "text/plain"
+                  }
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "2b44b242-ed43-48bb-b6ea-1c68a78511cb",
+              "name": "Top matches: short summaries, or extended objects with `full=true`.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "topmatches",
+                    ":type",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`true` returns extended match objects (teams, country, tournament and a **short** odds list) instead of short summaries. It does not return the full odds list — use `event` for that.",
+                        "type": "text/plain"
+                      },
+                      "key": "full",
+                      "value": "false"
+                    },
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "Only matters together with `full=true`: `full=true&odds=false` returns the extended match objects without `game_oc_list`.",
+                        "type": "text/plain"
+                      },
+                      "key": "odds",
+                      "value": "true"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "X-Key-Expires",
+                  "value": ""
+                }
+              ],
+              "body": "{\n  \"status\": 1,\n  \"page\": \"/v1/topmathes\",\n  \"body\": [\n    {\n      \"sgame_id\": \"0\",\n      \"stat_id\": \"0\",\n      \"game_id\": 746267958,\n      \"game_mid\": 746267958,\n      \"game_start\": 1787382000,\n      \"tournament_name\": \"Mobile Legends. MPL Indonesia\",\n      \"opp_1_name\": \"Team Liquid ID\",\n      \"opp_2_name\": \"Evos\",\n      \"opp_1_icon\": \"2b86bbc5fe28202aaddb53e2fe651a46.png\",\n      \"opp_2_icon\": \"459077.png\",\n      \"sport_id\": 40,\n      \"sport_name\": \"Esports\",\n      \"score_full\": \"1:0\",\n      \"period_name\": \"2 map\",\n      \"timer\": 0,\n      \"va\": 1,\n      \"vi\": \"20072803\",\n      \"zp\": null\n    },\n    {\n      \"sgame_id\": \"69a6e9d25e99bd05c6f13975\",\n      \"stat_id\": \"699986ec5e99bd05c6ea5357\",\n      \"game_id\": 746266481,\n      \"game_mid\": 746266481,\n      \"game_start\": 1787382000,\n      \"tournament_name\": \"Australia. NPL. Western Australia\",\n      \"opp_1_name\": \"Perth\",\n      \"opp_2_name\": \"Sorrento\",\n      \"opp_1_icon\": \"be4814791502d39f2de7bee35e685f19.png\",\n      \"opp_2_icon\": \"698744afccc4b93b72b90cbeba71ac6c.png\",\n      \"sport_id\": 1,\n      \"sport_name\": \"Football\",\n      \"score_full\": \"1:0\",\n      \"period_name\": \"2nd half\",\n      \"timer\": 2982,\n      \"va\": 1,\n      \"vi\": \"DR_1_1783063687\",\n      \"zp\": 746266481\n    },\n    {\n      \"sgame_id\": \"69a6e9d05e99bd05c6f13963\",\n      \"stat_id\": \"699986ec5e99bd05c6ea5357\",\n      \"game_id\": 746266480,\n      \"game_mid\": 746266480,\n      \"game_start\": 1787382000,\n      \"tournament_name\": \"Australia. NPL. Western Australia\",\n      \"opp_1_name\": \"Armadale\",\n      \"opp_2_name\": \"Perth RedStar\",\n      \"opp_1_icon\": \"398cfbf18abf67a8a1a27bbe2fc0b250.png\",\n      \"opp_2_icon\": \"1c1a28702cd883376ed2516e4b123de6.png\",\n      \"sport_id\": 1,\n      \"sport_name\": \"Football\",\n      \"score_full\": \"0:2\",\n      \"period_name\": \"2nd half\",\n      \"timer\": 3031,\n      \"va\": 1,\n      \"vi\": \"DR_1_1783063688\",\n      \"zp\": 746266480\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "908df108-1c5e-48dc-954a-d1971fb3abf8",
+              "name": "Access or parameter error (`error_code` + `error_message`). The documentation does not define the HTTP status codes of error responses, so always check the parsed JSON for `error_code`. See [Error Handling](https://sportapi.net/docs/sport-line/getting-started/error-handling.html).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "topmatches",
+                    ":type",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "`true` returns extended match objects (teams, country, tournament and a **short** odds list) instead of short summaries. It does not return the full odds list — use `event` for that.",
+                        "type": "text/plain"
+                      },
+                      "key": "full",
+                      "value": "false"
+                    },
+                    {
+                      "disabled": true,
+                      "description": {
+                        "content": "Only matters together with `full=true`: `full=true&odds=false` returns the extended match objects without `game_oc_list`.",
+                        "type": "text/plain"
+                      },
+                      "key": "odds",
+                      "value": "true"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error_code\": 100,\n  \"error_message\": \"Missing Package header\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "6f1b3820-f5d1-4e7c-88e4-2eeea7657da5",
+          "name": "Popular championships",
+          "request": {
+            "name": "Popular championships",
+            "description": {
+              "content": "Returns up to 12 of the most popular championships for Live or Prematch, without matches. Get a championship's matches with `events` using its `sport_id` and `tournament_id` and the same line type. Esports are not included; with a key limited to some sports, the list is built within them. Any other `type` value returns an empty list.\n\n**Recommended request frequency:** Live — no more than once every 60 seconds; Prematch (`line`) — no more than once every 300 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "topchampionships",
+                ":type",
+                ":lang"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "type": "any",
+                  "value": "live",
+                  "key": "type",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                    "type": "text/plain"
+                  }
+                },
+                {
+                  "type": "any",
+                  "value": "en",
+                  "key": "lang",
+                  "disabled": false,
+                  "description": {
+                    "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                    "type": "text/plain"
+                  }
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "c8db3720-fc0b-402a-9845-b9a4bc45d700",
+              "name": "Championships in order of popularity. May be empty.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "topchampionships",
+                    ":type",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "X-Key-Expires",
+                  "value": ""
+                }
+              ],
+              "body": "{\n  \"status\": 1,\n  \"page\": \"/v1/topchampionships\",\n  \"body\": [\n    {\n      \"position\": 1,\n      \"tournament_id\": 166775,\n      \"tournament_name\": \"USA. MLB\",\n      \"sport_id\": 5,\n      \"sport_name\": \"Baseball\",\n      \"country_id\": 153,\n      \"country_name\": \"United States\",\n      \"counter\": 4\n    },\n    {\n      \"position\": 2,\n      \"tournament_id\": 13589,\n      \"tournament_name\": \"NBA\",\n      \"sport_id\": 3,\n      \"sport_name\": \"Basketball\",\n      \"country_id\": 153,\n      \"country_name\": \"United States\",\n      \"counter\": 41\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "bbd23a02-ad9c-4120-b3ba-7261940e667d",
+              "name": "Access or parameter error (`error_code` + `error_message`). The documentation does not define the HTTP status codes of error responses, so always check the parsed JSON for `error_code`. See [Error Handling](https://sportapi.net/docs/sport-line/getting-started/error-handling.html).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "topchampionships",
+                    ":type",
+                    ":lang"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches. (This can only be one of live,line)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "live",
+                      "key": "type"
+                    },
+                    {
+                      "disabled": false,
+                      "description": {
+                        "content": "(Required) Language of names. Use the SportAPI code exactly as listed — some codes differ from ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html). (This can only be one of al,aa,ar,hy,az,bn,bs,bg,my,ca,hk,cn,tw,hr,cs,da,nl,en,et,fi,fr,ka,de,el,ht,he,hi,hu,is,id,it,ja,kz,km,ko,ne,ku,lo,lv,ln,lt,mk,ms,mn,sd,nb,fa,pl,pt,br,ro,ru,sr,si,sk,sl,so,es,mx,sw,tl,tj,th,tr,ua,ur,uz,vi,zu)",
+                        "type": "text/plain"
+                      },
+                      "type": "any",
+                      "value": "en",
+                      "key": "lang"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error_code\": 100,\n  \"error_message\": \"Missing Package header\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Account",
+      "description": "The client's keys, access period and usage.",
+      "item": [
+        {
+          "id": "7cd2aed4-2f63-4016-868e-bbf0197fab8d",
+          "name": "The client's keys and access",
+          "request": {
+            "name": "The client's keys and access",
+            "description": {
+              "content": "Using **any** of the client's keys, returns data for **all** of them: expiration date, days left, available sports and languages, access restrictions, last use and requests for the last 7 days. The key's language list is convenient for a language switcher. Also returns `your_ip` — the address this request came from. There are no parameters and no language in the path.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "v1",
+                "account"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "body": {},
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "0dd643b2-b34e-48ed-8dbc-cd353512be2f",
+              "name": "Client and key data.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "account"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "disabled": true,
+                  "description": {
+                    "content": "",
+                    "type": "text/plain"
+                  },
+                  "key": "X-Key-Expires",
+                  "value": ""
+                }
+              ],
+              "body": "{\n  \"status\": 1,\n  \"page\": \"/v1/account\",\n  \"body\": {\n    \"client\": {\n      \"public_id\": \"f47ad380-39e2-4549-ac76-aa422df628ea\",\n      \"name\": \"Example\"\n    },\n    \"your_ip\": \"203.0.113.7\",\n    \"keys\": [\n      {\n        \"key\": \"…c55f\",\n        \"current\": true,\n        \"type\": \"test\",\n        \"status\": \"active\",\n        \"label\": \"demo 12 days\",\n        \"starts_at\": null,\n        \"expires_at\": \"2026-11-03T14:34:23.479Z\",\n        \"days_left\": 30,\n        \"active\": true,\n        \"sports\": \"all\",\n        \"languages\": [\n          \"ru\",\n          \"en\"\n        ],\n        \"last_used_at\": \"2026-10-04T15:20:07.843Z\",\n        \"access_mode\": \"enforce\",\n        \"allowed_ips\": [\n          \"203.0.113.7\",\n          \"198.51.100.0/24\"\n        ],\n        \"allowed_domains\": [\n          \"example.com\",\n          \"*.example.com\"\n        ],\n        \"usage_7d\": [\n          {\n            \"date\": \"2026-09-28\",\n            \"requests\": 0\n          },\n          {\n            \"date\": \"2026-09-29\",\n            \"requests\": 0\n          },\n          {\n            \"date\": \"2026-09-30\",\n            \"requests\": 0\n          },\n          {\n            \"date\": \"2026-10-01\",\n            \"requests\": 0\n          },\n          {\n            \"date\": \"2026-10-02\",\n            \"requests\": 0\n          },\n          {\n            \"date\": \"2026-10-03\",\n            \"requests\": 0\n          },\n          {\n            \"date\": \"2026-10-04\",\n            \"requests\": 7\n          }\n        ]\n      }\n    ]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5c586c65-e6be-4369-886b-252dbd323ca3",
+              "name": "Access or parameter error (`error_code` + `error_message`). The documentation does not define the HTTP status codes of error responses, so always check the parsed JSON for `error_code`. See [Error Handling](https://sportapi.net/docs/sport-line/getting-started/error-handling.html).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "v1",
+                    "account"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "Package",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error_code\": 100,\n  \"error_message\": \"Missing Package header\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "type": "any",
+        "value": "Package",
+        "key": "key"
+      },
+      {
+        "type": "any",
+        "value": "{{apiKey}}",
+        "key": "value"
+      },
+      {
+        "type": "any",
+        "value": "header",
+        "key": "in"
+      }
+    ]
+  },
+  "event": [],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://YOUR_API_DOMAIN",
+      "type": "string",
+      "description": "Your personal Sport Line API base URL from the SportAPI manager, without a trailing slash."
+    },
+    {
+      "key": "apiKey",
+      "value": "",
+      "type": "secret",
+      "description": "Your API key. It is sent in the `Package` header. Do not commit it or share exported collections that contain it."
+    }
+  ],
+  "info": {
+    "_postman_id": "0b0c6f5e-3f7a-4a51-9d55-2f6a1c0e5a01",
+    "name": "SportAPI Sport Line API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "OpenAPI 3.0 description of **SportAPI Sport Line API** — Prematch and Live sports data for\nsportsbook websites and applications: sports, countries and tournaments, matches, scores,\nLive statistics, betting markets and odds.\n\nThis document is written from the public [SportAPI documentation](https://sportapi.net/docs/sport-line/getting-started/quick-start.html)\nand covers every documented REST method. It is not an official SDK; when the documentation and this\nfile disagree, the documentation wins.\n\n## Access\n\nThere is no public sandbox. The SportAPI manager gives each client:\n\n- a personal **base URL** (set it as the `baseUrl` server variable);\n- a personal **API key**, sent in the `Package` HTTP header with every request — never in the URL.\n\nThe key defines the available sports, languages and the access period. See\n[Authentication and Access](https://sportapi.net/docs/sport-line/getting-started/authentication-and-access.html).\n\nEvery successful response carries the `X-Key-Expires` header with the key's expiration date\n(ISO 8601, UTC).\n\n## Core integration flow\n\n```text\nmenu → events → event\n```\n\n1. `menu` — the current hierarchy of sports, countries and tournaments.\n2. `events` — matches of a sport or tournament with a short list of the main odds.\n3. `event` — the complete market list of one match (or of a sub-match from `sub_games`).\n\n`search`, `sports`, `countries`, `tournaments`, `toplist`, `topmatches`, `topchampionships` and\n`account` are additional methods. See [Core Concepts](https://sportapi.net/docs/sport-line/getting-started/core-concepts.html).\n\n## Responses\n\nA response is one of three shapes ([Response Format](https://sportapi.net/docs/sport-line/data-models/response-format.html)):\n\n| Shape | Meaning |\n|---|---|\n| `status` + `page` + `body` | Data, or an empty result set (`body: []` is not an error) |\n| `status` + `page` + `body.message` | State of a specific match in `event` (`Game not found`, `Game id finished`) |\n| `error_code` + `error_message` | Access or parameter error |\n\nCheck for `error_code` in the parsed JSON instead of relying only on the HTTP status — the\ndocumentation does not define HTTP status codes for error responses. See\n[Error Handling](https://sportapi.net/docs/sport-line/getting-started/error-handling.html).\n\n## Live and Prematch\n\n`type=live` returns matches in progress, `type=line` returns upcoming (Prematch) matches. Request\nand store them separately: a match that moves from Prematch to Live receives a **new** `game_id`.\n\n## Get an API key\n\nThe data API is a commercial service: plans start from $30/month, with a free 2-day trial.\nRequest a key from the [SportAPI manager on Telegram](https://t.me/sportapinet_bot?start=github_sportapi_openapi) or visit [sportapi.net](https://sportapi.net).\n\n\nContact Support:\n Name: SportAPI",
+      "type": "text/plain"
+    }
+  }
+}

@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate specs and examples
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install validators
+        run: pip install -r requirements-dev.txt
+
+      - name: Validate OpenAPI documents
+        run: openapi-spec-validator openapi/sport-line-api.yaml openapi/coupon-api.yaml
+
+      - name: Validate examples against schemas
+        run: python scripts/check_examples.py openapi/sport-line-api.yaml openapi/coupon-api.yaml
+
+  lint:
+    name: Redocly lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Lint with Redocly recommended rules
+        run: npx --yes @redocly/cli@2 lint
+
+  postman:
+    name: Postman collection is valid JSON
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse the collection
+        run: python3 -m json.tool postman/sportapi-sport-line-api.postman_collection.json > /dev/null

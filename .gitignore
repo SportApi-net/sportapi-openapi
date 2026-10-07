@@ -1,0 +1,18 @@
+# Secrets — never commit keys, tokens or callback secrets
+.env
+.env.*
+!.env.example
+
+# Generated clients and local tool output
+/generated/
+/out/
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store

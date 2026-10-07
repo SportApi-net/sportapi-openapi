@@ -1,0 +1,3769 @@
+# SportAPI Sport Line API — OpenAPI 3.0.3 description.
+# Written from the public documentation: https://sportapi.net/docs/sport-line/getting-started/quick-start.html
+# Examples are trimmed excerpts of the documented English JSON responses.
+# This file is MIT-licensed. Access to the API itself requires a SportAPI subscription: https://sportapi.net
+openapi: 3.0.3
+info:
+  title: SportAPI Sport Line API
+  version: 0.1.0
+  description: |
+    OpenAPI 3.0 description of **SportAPI Sport Line API** — Prematch and Live sports data for
+    sportsbook websites and applications: sports, countries and tournaments, matches, scores,
+    Live statistics, betting markets and odds.
+
+    This document is written from the public [SportAPI documentation](https://sportapi.net/docs/sport-line/getting-started/quick-start.html)
+    and covers every documented REST method. It is not an official SDK; when the documentation and this
+    file disagree, the documentation wins.
+
+    ## Access
+
+    There is no public sandbox. The SportAPI manager gives each client:
+
+    - a personal **base URL** (set it as the `baseUrl` server variable);
+    - a personal **API key**, sent in the `Package` HTTP header with every request — never in the URL.
+
+    The key defines the available sports, languages and the access period. See
+    [Authentication and Access](https://sportapi.net/docs/sport-line/getting-started/authentication-and-access.html).
+
+    Every successful response carries the `X-Key-Expires` header with the key's expiration date
+    (ISO 8601, UTC).
+
+    ## Core integration flow
+
+    ```text
+    menu → events → event
+    ```
+
+    1. `menu` — the current hierarchy of sports, countries and tournaments.
+    2. `events` — matches of a sport or tournament with a short list of the main odds.
+    3. `event` — the complete market list of one match (or of a sub-match from `sub_games`).
+
+    `search`, `sports`, `countries`, `tournaments`, `toplist`, `topmatches`, `topchampionships` and
+    `account` are additional methods. See [Core Concepts](https://sportapi.net/docs/sport-line/getting-started/core-concepts.html).
+
+    ## Responses
+
+    A response is one of three shapes ([Response Format](https://sportapi.net/docs/sport-line/data-models/response-format.html)):
+
+    | Shape | Meaning |
+    |---|---|
+    | `status` + `page` + `body` | Data, or an empty result set (`body: []` is not an error) |
+    | `status` + `page` + `body.message` | State of a specific match in `event` (`Game not found`, `Game id finished`) |
+    | `error_code` + `error_message` | Access or parameter error |
+
+    Check for `error_code` in the parsed JSON instead of relying only on the HTTP status — the
+    documentation does not define HTTP status codes for error responses. See
+    [Error Handling](https://sportapi.net/docs/sport-line/getting-started/error-handling.html).
+
+    ## Live and Prematch
+
+    `type=live` returns matches in progress, `type=line` returns upcoming (Prematch) matches. Request
+    and store them separately: a match that moves from Prematch to Live receives a **new** `game_id`.
+
+    ## Get an API key
+
+    The data API is a commercial service: plans start from $30/month, with a free 2-day trial.
+    Request a key from the [SportAPI manager on Telegram](https://t.me/sportapinet_bot?start=github_sportapi_openapi) or visit [sportapi.net](https://sportapi.net).
+  contact:
+    name: SportAPI
+    url: https://sportapi.net
+  license:
+    name: MIT (this specification document)
+    url: https://opensource.org/licenses/MIT
+externalDocs:
+  description: SportAPI documentation — Sport Line API Quick Start
+  url: https://sportapi.net/docs/sport-line/getting-started/quick-start.html
+servers:
+  - url: '{baseUrl}'
+    description: Client-specific base URL issued by the SportAPI manager.
+    variables:
+      baseUrl:
+        default: https://YOUR_API_DOMAIN
+        description: Your personal Sport Line API base URL, without a trailing slash.
+security:
+  - PackageKey: []
+tags:
+  - name: Navigation
+    description: Sports, countries and tournaments that currently have matches.
+    externalDocs:
+      description: Sport Line API Methods
+      url: https://sportapi.net/docs/sport-line/api-reference/overview.html
+  - name: Matches
+    description: Match lists, the match calendar, a specific match with all markets, and search.
+    externalDocs:
+      description: Match Data Model
+      url: https://sportapi.net/docs/sport-line/data-models/match.html
+  - name: Top selections
+    description: Ready-made selections of popular matches and championships.
+    externalDocs:
+      description: Sport Line API Methods
+      url: https://sportapi.net/docs/sport-line/api-reference/overview.html
+  - name: Account
+    description: The client's keys, access period and usage.
+    externalDocs:
+      description: Authentication and Access
+      url: https://sportapi.net/docs/sport-line/getting-started/authentication-and-access.html
+paths:
+  /v1/menu/{type}/{lang}:
+    get:
+      tags:
+        - Navigation
+      summary: Sports line menu (sport → country → tournament)
+      description: |-
+        Returns the hierarchy of the available sports line — sports, their countries and tournaments — with the number of available matches at each level. Use it to build the site menu and to get the `sportId` and `tournamentId` for `events`. It contains no matches or odds.
+
+        Only sections that currently have matches for the selected line type are returned, so do not store the IDs as a permanent list. Tournament names may occasionally be empty strings.
+
+        **Recommended request frequency:** Live — no more than once every 20 seconds; Prematch (`line`) — no more than once every 60 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).
+      operationId: getMenu
+      externalDocs:
+        description: menu — Sports Line Menu
+        url: https://sportapi.net/docs/sport-line/api-reference/menu.html
+      parameters:
+        - $ref: '#/components/parameters/Type'
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/Cybersport'
+      responses:
+        '200':
+          description: Sports with nested countries and tournaments.
+          headers:
+            X-Key-Expires:
+              $ref: '#/components/headers/X-Key-Expires'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuResponse'
+              examples:
+                live:
+                  summary: Live menu
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/menu
+                    body:
+                      - id: 1
+                        name: Football
+                        counter: 56
+                        sub:
+                          - id: 208
+                            name: Sri Lanka
+                            counter: 1
+                            sport_id: 1
+                            sub:
+                              - id: 2217395
+                                name: Sri Lanka. Super League
+                                counter: 1
+                                sport_id: 1
+                                countryId: 208
+                          - id: 225
+                            name: World
+                            counter: 27
+                            sport_id: 1
+                            sub:
+                              - id: 67559
+                                name: Club Friendlies
+                                counter: 3
+                                sport_id: 1
+                                countryId: 225
+                              - id: 2800655
+                                name: Regional League. W
+                                counter: 1
+                                sport_id: 1
+                                countryId: 225
+                      - id: 2
+                        name: Ice Hockey
+                        counter: 17
+                        sub:
+                          - id: 225
+                            name: World
+                            counter: 14
+                            sport_id: 2
+                            sub:
+                              - id: 1164241
+                                name: Club Friendlies
+                                counter: 7
+                                sport_id: 2
+                                countryId: 225
+                              - id: 44537
+                                name: International Tournament U20
+                                counter: 1
+                                sport_id: 2
+                                countryId: 225
+                line:
+                  summary: Prematch menu
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/menu
+                    body:
+                      - id: 1
+                        name: Football
+                        counter: 2573
+                        sub:
+                          - id: 2
+                            name: Ukraine
+                            counter: 16
+                            sport_id: 1
+                            sub:
+                              - id: 120009
+                                name: Ukraine Cup
+                                counter: 8
+                                sport_id: 1
+                                countryId: 2
+                              - id: 29949
+                                name: Ukraine. Premier League
+                                counter: 8
+                                sport_id: 1
+                                countryId: 2
+                          - id: 4
+                            name: Australia
+                            counter: 104
+                            sport_id: 1
+                            sub:
+                              - id: 149213
+                                name: Australia Cup
+                                counter: 2
+                                sport_id: 1
+                                countryId: 4
+                              - id: 2226303
+                                name: Australia. Queensland Cup. Women
+                                counter: 1
+                                sport_id: 1
+                                countryId: 4
+                      - id: 2
+                        name: Ice Hockey
+                        counter: 168
+                        sub:
+                          - id: 225
+                            name: World
+                            counter: 54
+                            sport_id: 2
+                            sub:
+                              - id: 3355
+                                name: Kontinental Hockey League
+                                counter: 8
+                                sport_id: 2
+                                countryId: 225
+                              - id: 1164241
+                                name: Club Friendlies
+                                counter: 39
+                                sport_id: 2
+                                countryId: 225
+                          - id: 4
+                            name: Australia
+                            counter: 5
+                            sport_id: 2
+                            sub:
+                              - id: 1516499
+                                name: Australia. AIHL
+                                counter: 5
+                                sport_id: 2
+                                countryId: 4
+        default:
+          $ref: '#/components/responses/ApiError'
+  /v1/events/{sportId}/{tournamentId}/{format}/{count}/{type}/{lang}:
+    get:
+      tags:
+        - Matches
+      summary: Match list for a sport or tournament
+      description: |-
+        Returns matches of the selected sport, grouped by tournament: main match data, teams, start time, Live score and period, a **short** list of the main markets and odds, Live statistics, video and tracker IDs. Use `event` to get the complete market list of one match.
+
+        | Request | Result |
+        |---|---|
+        | `.../{sportId}/0/sub/50/line/{lang}` | "Top": 50 matches (next 24 hours first, most popular first) |
+        | `.../{sportId}/0/sub/50/line/{lang}?match=all` | The full Prematch line of the sport |
+        | `.../{sportId}/{tournamentId}/sub/50/line/{lang}` | All matches of the tournament |
+        | `.../{sportId}/0/sub/50/live/{lang}` | All Live matches of the sport |
+
+        The "Top" rule does not apply to Live or to esports (`cybersport=true`). In this list `sub_games` and `event_plan` are always `[]`.
+
+        **Recommended request frequency:** Live — no more than once every 7 seconds; Prematch (`line`) — no more than once every 30 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).
+      operationId: getEvents
+      externalDocs:
+        description: events — Match List
+        url: https://sportapi.net/docs/sport-line/api-reference/events.html
+      parameters:
+        - $ref: '#/components/parameters/SportId'
+        - $ref: '#/components/parameters/TournamentId'
+        - $ref: '#/components/parameters/EventsFormat'
+        - $ref: '#/components/parameters/Count'
+        - $ref: '#/components/parameters/Type'
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/Cybersport'
+        - name: match
+          in: query
+          required: false
+          description: '`all` — the full line of the sport instead of the "Top" selection. Only for `type=line`
+            with `tournamentId=0`.'
+          schema:
+            type: string
+            enum:
+              - all
+        - $ref: '#/components/parameters/Odds'
+      responses:
+        '200':
+          description: Tournaments with nested matches. An empty `body` means no matches for the conditions.
+          headers:
+            X-Key-Expires:
+              $ref: '#/components/headers/X-Key-Expires'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventsResponse'
+              examples:
+                live:
+                  summary: Live football, all tournaments
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/events
+                    body:
+                      - tournament_id: 1205475
+                        tournament_name: Australia. NPL Northern Territory
+                        events_list:
+                          - sgame_id: '0'
+                            stat_id: '0'
+                            game_id: 746037229
+                            game_mid: 746037229
+                            game_num: 250696
+                            game_start: 1787310000
+                            country_id: 4
+                            country_name: Australia
+                            tournament_id: 1205475
+                            tournament_name: Australia. NPL Northern Territory
+                            opp_1_name: Garuda Darwin
+                            opp_2_name: Darwin Olympic
+                            opp_1_id: 6515395
+                            opp_1_ids:
+                              - 6515395
+                            opp_2_id: 1780
+                            opp_2_ids:
+                              - 1780
+                            opp_1_icon: d0ba754f226ad8a0ac0dff084f967a7a.png
+                            opp_2_icon: a5ab433dc124b4daafee09a2c7c15b50.png
+                            game_oc_counter: 134
+                            game_oc_list:
+                              - group_id: 1
+                                group_name: 1X2
+                                columns: 3
+                                oc_list:
+                                  - oc_group_name: 1X2
+                                    oc_name: W2
+                                    oc_rate: 1.064
+                                    oc_size: 0
+                                    oc_pointer: 746037229|1|3|0
+                                    oc_block: false
+                                    op_id: null
+                                  - oc_group_name: 1X2
+                                    oc_name: X
+                                    oc_rate: 10.0
+                                    oc_size: 0
+                                    oc_pointer: 746037229|1|2|0
+                                    oc_block: false
+                                    op_id: null
+                                  - oc_group_name: 1X2
+                                    oc_name: W1
+                                    oc_rate: 27.0
+                                    oc_size: 0
+                                    oc_pointer: 746037229|1|1|0
+                                    oc_block: false
+                                    op_id: null
+                              - group_id: 2
+                                group_name: Handicap
+                                columns: 2
+                                oc_list:
+                                  - oc_group_name: Handicap
+                                    oc_name: 1 1.5
+                                    oc_rate: 1.69
+                                    oc_size: '1.5'
+                                    oc_pointer: 746037229|2|7|1.5
+                                    oc_block: false
+                                    op_id: null
+                                  - oc_group_name: Handicap
+                                    oc_name: 2 -1.5
+                                    oc_rate: 2.17
+                                    oc_size: '-1.5'
+                                    oc_pointer: 746037229|2|8|-1.5
+                                    oc_block: false
+                                    op_id: null
+                            sport_id: 1
+                            sport_name: Football
+                            timer: 4617
+                            score_full: 0:1
+                            score_period: 0:1;0:0
+                            stat_list:
+                              - id: 45
+                                name: Attacks
+                                opp1: '62'
+                                opp2: '58'
+                              - id: 58
+                                name: Dangerous attacks
+                                opp1: '36'
+                                opp2: '56'
+                              - id: 29
+                                name: Possession %
+                                opp1: '42'
+                                opp2: '58'
+                              - id: 59
+                                name: Shots on target
+                                opp1: '2'
+                                opp2: '4'
+                            extra_time: ''
+                            finale: false
+                            pitch: ''
+                            sub_games: []
+                            event_plan: []
+                            period_name: 2nd half
+                            game_desk: Half
+                            score_extra: ''
+                            game_dop_name: ''
+                            va: 1
+                            vi: DR_2_1783062440
+                            zp: 746037229
+                            game_plan: null
+                            stat_list_extra: []
+                      - tournament_id: 16655
+                        tournament_name: Hong Kong. Premier League
+                        events_list:
+                          - sgame_id: 6a804f877762417de82f3f9c
+                            stat_id: 6a804f877762417de82f3f9d
+                            game_id: 746049398
+                            game_mid: 746049398
+                            game_num: 205810
+                            game_start: 1787313600
+                            country_id: 57
+                            country_name: Hong Kong
+                            tournament_id: 16655
+                            tournament_name: Hong Kong. Premier League
+                            opp_1_name: Eastern Sports Club
+                            opp_2_name: Shatin
+                            opp_1_id: 34203
+                            opp_1_ids:
+                              - 34203
+                            opp_2_id: 32433
+                            opp_2_ids:
+                              - 32433
+                            opp_1_icon: 34203.png
+                            opp_2_icon: 32433.png
+                            game_oc_counter: 370
+                            game_oc_list:
+                              - group_id: 1
+                                group_name: 1X2
+                                columns: 3
+                                oc_list:
+                                  - oc_group_name: 1X2
+                                    oc_name: W1
+                                    oc_rate: 1.19
+                                    oc_size: 0
+                                    oc_pointer: 746049398|1|1|0
+                                    oc_block: false
+                                    op_id: null
+                                  - oc_group_name: 1X2
+                                    oc_name: X
+                                    oc_rate: 7.08
+                                    oc_size: 0
+                                    oc_pointer: 746049398|1|2|0
+                                    oc_block: false
+                                    op_id: null
+                                  - oc_group_name: 1X2
+                                    oc_name: W2
+                                    oc_rate: 11.3
+                                    oc_size: 0
+                                    oc_pointer: 746049398|1|3|0
+                                    oc_block: false
+                                    op_id: null
+                              - group_id: 8
+                                group_name: Double Chance
+                                columns: 3
+                                oc_list:
+                                  - oc_group_name: Double Chance
+                                    oc_name: 1X
+                                    oc_rate: 1.025
+                                    oc_size: 0
+                                    oc_pointer: 746049398|8|4|0
+                                    oc_block: false
+                                    op_id: null
+                                  - oc_group_name: Double Chance
+                                    oc_name: '12'
+                                    oc_rate: 1.08
+                                    oc_size: 0
+                                    oc_pointer: 746049398|8|5|0
+                                    oc_block: false
+                                    op_id: null
+                                  - oc_group_name: Double Chance
+                                    oc_name: 2X
+                                    oc_rate: 4.37
+                                    oc_size: 0
+                                    oc_pointer: 746049398|8|6|0
+                                    oc_block: false
+                                    op_id: null
+                            sport_id: 1
+                            sport_name: Football
+                            timer: 2213
+                            score_full: '1:0'
+                            score_period: '1:0'
+                            stat_list:
+                              - id: 45
+                                name: Attacks
+                                opp1: '37'
+                                opp2: '40'
+                              - id: 58
+                                name: Dangerous attacks
+                                opp1: '17'
+                                opp2: '24'
+                              - id: 29
+                                name: Possession %
+                                opp1: '61'
+                                opp2: '39'
+                              - id: 59
+                                name: Shots on target
+                                opp1: '4'
+                                opp2: '1'
+                            extra_time: ''
+                            finale: false
+                            pitch: ''
+                            sub_games: []
+                            event_plan: []
+                            period_name: 1st half
+                            game_desk: Half
+                            score_extra: ''
+                            game_dop_name: ''
+                            va: null
+                            vi: null
+                            zp: 746049398
+                            game_plan: null
+                            stat_list_extra: []
+                line:
+                  summary: Prematch football, "Top" selection
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/events
+                    body:
+                      - tournament_id: 1706694
+                        tournament_name: UEFA Nations League
+                        events_list:
+                          - sgame_id: 6993f3bd785fcb8116a588a2
+                            stat_id: 6993f305785fcb8116a58842
+                            game_id: 758182302
+                            game_mid: 758182302
+                            game_num: 280688
+                            game_start: 1791295200
+                            country_id: 223
+                            country_name: Europe
+                            tournament_id: 1706694
+                            tournament_name: UEFA Nations League
+                            opp_1_name: Kazakhstan
+                            opp_2_name: Faroe Islands
+                            opp_1_id: 12791
+                            opp_1_ids:
+                              - 12791
+                            opp_2_id: 12645
+                            opp_2_ids:
+                              - 12645
+                            opp_1_icon: ac766dd90d5f2e2f7c1da818ae5e33e3.png
+                            opp_2_icon: a17a00cda5cd73393b3bd4589696790b.png
+                            game_oc_counter: 1276
+                            game_oc_list:
+                              - group_id: 1
+                                group_name: 1x2
+                                columns: 3
+                                oc_list:
+                                  - oc_group_name: 1x2
+                                    oc_name: W1
+                                    oc_rate: 2.657
+                                    oc_size: 0
+                                    oc_pointer: 758182302|1|1|0
+                                    oc_block: false
+                                    op_id: null
+                                  - oc_group_name: 1x2
+                                    oc_name: X
+                                    oc_rate: 2.996
+                                    oc_size: 0
+                                    oc_pointer: 758182302|1|2|0
+                                    oc_block: false
+                                    op_id: null
+                                  - oc_group_name: 1x2
+                                    oc_name: W2
+                                    oc_rate: 3.115
+                                    oc_size: 0
+                                    oc_pointer: 758182302|1|3|0
+                                    oc_block: false
+                                    op_id: null
+                              - group_id: 8
+                                group_name: Double Chance
+                                columns: 3
+                                oc_list:
+                                  - oc_group_name: Double Chance
+                                    oc_name: 1X
+                                    oc_rate: 1.398
+                                    oc_size: 0
+                                    oc_pointer: 758182302|8|4|0
+                                    oc_block: false
+                                    op_id: null
+                                  - oc_group_name: Double Chance
+                                    oc_name: '12'
+                                    oc_rate: 1.423
+                                    oc_size: 0
+                                    oc_pointer: 758182302|8|5|0
+                                    oc_block: false
+                                    op_id: null
+                                  - oc_group_name: Double Chance
+                                    oc_name: 2X
+                                    oc_rate: 1.515
+                                    oc_size: 0
+                                    oc_pointer: 758182302|8|6|0
+                                    oc_block: false
+                                    op_id: null
+                            sport_id: 1
+                            sport_name: Football
+                            timer: 0
+                            score_full: 0:0
+                            score_period: ''
+                            stat_list: []
+                            extra_time: ''
+                            finale: false
+                            pitch: ''
+                            sub_games: []
+                            event_plan: []
+                            period_name: ''
+                            game_desk: Half
+                            score_extra: ''
+                            game_dop_name: ''
+                            va: null
+                            vi: null
+                            zp: null
+                            game_plan: null
+                            stat_list_extra: []
+                      - tournament_id: 828065
+                        tournament_name: USA. MLS
+                        events_list:
+                          - sgame_id: 69232d256d807ed026d370b4
+                            stat_id: 69232d046d807ed026cb8849
+                            game_id: 754828211
+                            game_mid: 754828211
+                            game_num: 231611
+                            game_start: 1791333000
+                            country_id: 153
+                            country_name: United States
+                            tournament_id: 828065
+                            tournament_name: USA. MLS
+                            opp_1_name: Chicago Fire
+                            opp_2_name: Vancouver Whitecaps
+                            opp_1_id: 4946
+                            opp_1_ids:
+                              - 4946
+                            opp_2_id: 4920
+                            opp_2_ids:
+                              - 4920
+                            opp_1_icon: a7fe40e285984c12b676f62f014d50f6.png
+                            opp_2_icon: 4920.png
+                            game_oc_counter: 1166
+                            game_oc_list:
+                              - group_id: 1
+                                group_name: 1x2
+                                columns: 3
+                                oc_list:
+                                  - oc_group_name: 1x2
+                                    oc_name: W2
+                                    oc_rate: 2.191
+                                    oc_size: 0
+                                    oc_pointer: 754828211|1|3|0
+                                    oc_block: false
+                                    op_id: null
+                                  - oc_group_name: 1x2
+                                    oc_name: W1
+                                    oc_rate: 3.085
+                                    oc_size: 0
+                                    oc_pointer: 754828211|1|1|0
+                                    oc_block: false
+                                    op_id: null
+                                  - oc_group_name: 1x2
+                                    oc_name: X
+                                    oc_rate: 3.985
+                                    oc_size: 0
+                                    oc_pointer: 754828211|1|2|0
+                                    oc_block: false
+                                    op_id: null
+                              - group_id: 8
+                                group_name: Double Chance
+                                columns: 3
+                                oc_list:
+                                  - oc_group_name: Double Chance
+                                    oc_name: '12'
+                                    oc_rate: 1.273
+                                    oc_size: 0
+                                    oc_pointer: 754828211|8|5|0
+                                    oc_block: false
+                                    op_id: null
+                                  - oc_group_name: Double Chance
+                                    oc_name: 2X
+                                    oc_rate: 1.403
+                                    oc_size: 0
+                                    oc_pointer: 754828211|8|6|0
+                                    oc_block: false
+                                    op_id: null
+                                  - oc_group_name: Double Chance
+                                    oc_name: 1X
+                                    oc_rate: 1.724
+                                    oc_size: 0
+                                    oc_pointer: 754828211|8|4|0
+                                    oc_block: false
+                                    op_id: null
+                            sport_id: 1
+                            sport_name: Football
+                            timer: 0
+                            score_full: 0:0
+                            score_period: ''
+                            stat_list: []
+                            extra_time: ''
+                            finale: false
+                            pitch: ''
+                            sub_games: []
+                            event_plan: []
+                            period_name: ''
+                            game_desk: Half
+                            score_extra: ''
+                            game_dop_name: ''
+                            va: null
+                            vi: null
+                            zp: null
+                            game_plan: null
+                            stat_list_extra: []
+                empty:
+                  summary: No matches
+                  value:
+                    status: 1
+                    page: /v1/events
+                    body: []
+        default:
+          $ref: '#/components/responses/ApiError'
+  /v1/events/{sportId}/{tournamentId}/{format}/{count}/line/{hours}/{days}/{lang}:
+    get:
+      tags:
+        - Matches
+      summary: Match calendar (Prematch by period)
+      description: |-
+        Returns Prematch matches that start within the selected period: the next 2, 4, 6 or 12 hours, today, or a specific day up to 5 days ahead. It is the `events` method with two extra path segments and the same response structure.
+
+        | `hours` | `days` | Matches returned |
+        |---|---|---|
+        | `2`, `4`, `6`, `12` | any | From now until now + N hours (`days` is ignored) |
+        | `0` | `0` | Today: from now until the end of the day |
+        | `0` | `1`…`5` | That calendar day only, 00:00–24:00 (`1` — tomorrow) |
+        | `0` | greater than `5` | Empty list |
+
+        Days follow Kyiv time (`Europe/Kyiv`). Other `hours` values (for example `3`) do not cause an error — the period is then defined by `days`. Matches that have already started are not included. The "Top" rule does not apply: all matches of the period are returned. Esports are not supported.
+
+        **Recommended request frequency:** no more than once every 60 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).
+      operationId: getEventsByPeriod
+      externalDocs:
+        description: Match Calendar — events by Period
+        url: https://sportapi.net/docs/sport-line/api-reference/events-by-period.html
+      parameters:
+        - $ref: '#/components/parameters/SportId'
+        - $ref: '#/components/parameters/TournamentId'
+        - $ref: '#/components/parameters/EventsFormat'
+        - $ref: '#/components/parameters/Count'
+        - name: hours
+          in: path
+          required: true
+          description: 'Period in hours from now: `2`, `4`, `6` or `12`. `0` — the period is set by `days`.'
+          schema:
+            type: integer
+            minimum: 0
+          example: 2
+        - name: days
+          in: path
+          required: true
+          description: 'Day: `0` — today until the end of the day, `1` — tomorrow, … `5`.'
+          schema:
+            type: integer
+            minimum: 0
+          example: 0
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/Odds'
+      responses:
+        '200':
+          description: Tournaments with nested matches of the period. An empty `body` means no matches
+            in the period.
+          headers:
+            X-Key-Expires:
+              $ref: '#/components/headers/X-Key-Expires'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventsResponse'
+              examples:
+                calendar:
+                  summary: Abridged example from the documentation
+                  description: A match in the real response has the same fields as in `events`.
+                  value:
+                    status: 1
+                    page: /v1/events
+                    body:
+                      - tournament_id: 1706694
+                        tournament_name: UEFA Nations League
+                        events_list:
+                          - game_id: 758182302
+                            game_start: 1791295200
+                            opp_1_name: Kazakhstan
+                            opp_2_name: Faroe Islands
+                            game_oc_counter: 1261
+                empty:
+                  summary: No matches in the period
+                  value:
+                    status: 1
+                    page: /v1/events
+                    body: []
+        default:
+          $ref: '#/components/responses/ApiError'
+  /v1/event/{gameId}/group/{type}/{lang}:
+    get:
+      tags:
+        - Matches
+      summary: Specific match with the complete market list
+      description: |-
+        Returns detailed data for one match or sub-match: the complete available market list in the `group` format (markets → columns → selections, already sorted), Live statistics, the `sub_games` list of sub-matches, `event_plan` for group matches, video and tracker IDs.
+
+        To get the odds of a sub-match (corners, a half, cards…), call this method again with the sub-match `game_id` from `sub_games`. Request an ID with the same line type it came from.
+
+        If the match is no longer available, `body` contains only `message` (`Game not found` or `Game id finished`) — check for it before parsing match fields.
+
+        **Recommended request frequency:** Live — no more than once every 5 seconds; Prematch (`line`) — no more than once every 30 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).
+      operationId: getEvent
+      externalDocs:
+        description: event — Specific Match
+        url: https://sportapi.net/docs/sport-line/api-reference/event.html
+      parameters:
+        - $ref: '#/components/parameters/GameId'
+        - $ref: '#/components/parameters/Type'
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/Odds'
+      responses:
+        '200':
+          description: A match object, or a service message in `body.message`.
+          headers:
+            X-Key-Expires:
+              $ref: '#/components/headers/X-Key-Expires'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventResponse'
+              examples:
+                live:
+                  summary: Live match 746146992
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/event
+                    body:
+                      sgame_id: 6a35079e5e99bd05c63e9101
+                      stat_id: 6a34c3a75e99bd05c63e703a
+                      game_id: 746146992
+                      game_mid: 746146992
+                      game_num: 150078
+                      game_start: 1787338800
+                      country_id: 231
+                      country_name: England
+                      tournament_id: 88637
+                      tournament_name: England. Premier League
+                      opp_1_name: Arsenal
+                      opp_2_name: Coventry City
+                      opp_1_id: 50679
+                      opp_1_ids:
+                        - 50679
+                      opp_2_id: 2074
+                      opp_2_ids:
+                        - 2074
+                      opp_1_icon: 08a25897e35d75d7261a8095b9599aad.png
+                      opp_2_icon: 2074.png
+                      game_oc_counter: 278
+                      game_oc_list:
+                        - group_id: 19
+                          group_name: Both Teams To Score
+                          columns: 2
+                          oc_list:
+                            - - oc_group_name: Both Teams To Score
+                                oc_name: 'Yes'
+                                oc_rate: 3.336
+                                oc_size: 0
+                                oc_pointer: 746146992|19|180|0
+                                oc_block: false
+                                op_id: null
+                            - - oc_group_name: Both Teams To Score
+                                oc_name: 'No'
+                                oc_rate: 1.33
+                                oc_size: 0
+                                oc_pointer: 746146992|19|181|0
+                                oc_block: false
+                                op_id: null
+                        - group_id: 17
+                          group_name: Total
+                          columns: 2
+                          oc_list:
+                            - - oc_group_name: Total
+                                oc_name: Over 3.5
+                                oc_rate: 1.23
+                                oc_size: '3.5'
+                                oc_pointer: 746146992|17|9|3.5
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Total
+                                oc_name: Over 4
+                                oc_rate: 1.435
+                                oc_size: '4'
+                                oc_pointer: 746146992|17|9|4
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Total
+                                oc_name: Over 4.5
+                                oc_rate: 2.09
+                                oc_size: '4.5'
+                                oc_pointer: 746146992|17|9|4.5
+                                oc_block: false
+                                op_id: null
+                            - - oc_group_name: Total
+                                oc_name: Under 3.5
+                                oc_rate: 4.25
+                                oc_size: '3.5'
+                                oc_pointer: 746146992|17|10|3.5
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Total
+                                oc_name: Under 4
+                                oc_rate: 2.848
+                                oc_size: '4'
+                                oc_pointer: 746146992|17|10|4
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Total
+                                oc_name: Under 4.5
+                                oc_rate: 1.81
+                                oc_size: '4.5'
+                                oc_pointer: 746146992|17|10|4.5
+                                oc_block: false
+                                op_id: null
+                        - group_id: 2
+                          group_name: Handicap
+                          columns: 2
+                          oc_list:
+                            - - oc_group_name: Handicap
+                                oc_name: 1 -5.5
+                                oc_rate: 8.25
+                                oc_size: '-5.5'
+                                oc_pointer: 746146992|2|7|-5.5
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Handicap
+                                oc_name: 1 -5
+                                oc_rate: 6.77
+                                oc_size: '-5'
+                                oc_pointer: 746146992|2|7|-5
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Handicap
+                                oc_name: 1 -4.5
+                                oc_rate: 3.096
+                                oc_size: '-4.5'
+                                oc_pointer: 746146992|2|7|-4.5
+                                oc_block: false
+                                op_id: null
+                            - - oc_group_name: Handicap
+                                oc_name: 2 5.5
+                                oc_rate: 1.075
+                                oc_size: '5.5'
+                                oc_pointer: 746146992|2|8|5.5
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Handicap
+                                oc_name: 2 5
+                                oc_rate: 1.104
+                                oc_size: '5'
+                                oc_pointer: 746146992|2|8|5
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Handicap
+                                oc_name: 2 4.5
+                                oc_rate: 1.37
+                                oc_size: '4.5'
+                                oc_pointer: 746146992|2|8|4.5
+                                oc_block: false
+                                op_id: null
+                      sport_id: 1
+                      sport_name: Football
+                      timer: 3376
+                      score_full: '3:0'
+                      score_period: 2:0;1:0
+                      stat_list:
+                        - id: 93
+                          name: xG
+                          opp1: '1.45'
+                          opp2: '0.03'
+                        - id: 45
+                          name: Attacks
+                          opp1: '61'
+                          opp2: '54'
+                        - id: 58
+                          name: Dangerous attacks
+                          opp1: '44'
+                          opp2: '19'
+                        - id: 29
+                          name: Possession %
+                          opp1: '65'
+                          opp2: '35'
+                      extra_time: ''
+                      finale: false
+                      pitch: ''
+                      sub_games:
+                        - game_id: 746147013
+                          game_num: 150080
+                          game_name: 2nd half
+                        - game_id: 746147010
+                          game_num: 205978
+                          game_name: Corners
+                        - game_id: 746147037
+                          game_num: 207011
+                          game_name: Quick events
+                      event_plan: []
+                      period_name: period
+                      game_desk: ''
+                      score_extra: ''
+                      game_dop_name: ''
+                      va: null
+                      vi: null
+                      zp: 746146992
+                      game_plan: null
+                      stat_list_extra: []
+                line:
+                  summary: Prematch match 730321837
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/event
+                    body:
+                      sgame_id: 6a35079e5e99bd05c63e9112
+                      stat_id: 6a34c3a75e99bd05c63e703a
+                      game_id: 730321837
+                      game_mid: 730321837
+                      game_num: 192038
+                      game_start: 1787490000
+                      country_id: 231
+                      country_name: England
+                      tournament_id: 88637
+                      tournament_name: England. Premier League
+                      opp_1_name: Manchester City
+                      opp_2_name: Bournemouth
+                      opp_1_id: 1994
+                      opp_1_ids:
+                        - 1994
+                      opp_2_id: 18621
+                      opp_2_ids:
+                        - 18621
+                      opp_1_icon: 57060f6368da70fbdfff37cb4b0280a5.png
+                      opp_2_icon: 75a114bd51430104bf8ea357f7ce003e.png
+                      game_oc_counter: 1337
+                      game_oc_list:
+                        - group_id: 1
+                          group_name: 1X2
+                          columns: 3
+                          oc_list:
+                            - - oc_group_name: 1X2
+                                oc_name: W1
+                                oc_rate: 1.525
+                                oc_size: 0
+                                oc_pointer: 730321837|1|1|0
+                                oc_block: false
+                                op_id: null
+                            - - oc_group_name: 1X2
+                                oc_name: X
+                                oc_rate: 5.08
+                                oc_size: 0
+                                oc_pointer: 730321837|1|2|0
+                                oc_block: false
+                                op_id: null
+                            - - oc_group_name: 1X2
+                                oc_name: W2
+                                oc_rate: 6.15
+                                oc_size: 0
+                                oc_pointer: 730321837|1|3|0
+                                oc_block: false
+                                op_id: null
+                        - group_id: 17
+                          group_name: Total
+                          columns: 2
+                          oc_list:
+                            - - oc_group_name: Total
+                                oc_name: Over 0.5
+                                oc_rate: 1.019
+                                oc_size: '0.5'
+                                oc_pointer: 730321837|17|9|0.5
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Total
+                                oc_name: Over 1
+                                oc_rate: 1.02
+                                oc_size: '1'
+                                oc_pointer: 730321837|17|9|1
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Total
+                                oc_name: Over 1.5
+                                oc_rate: 1.085
+                                oc_size: '1.5'
+                                oc_pointer: 730321837|17|9|1.5
+                                oc_block: false
+                                op_id: null
+                            - - oc_group_name: Total
+                                oc_name: Under 0.5
+                                oc_rate: 22.0
+                                oc_size: '0.5'
+                                oc_pointer: 730321837|17|10|0.5
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Total
+                                oc_name: Under 1
+                                oc_rate: 16.5
+                                oc_size: '1'
+                                oc_pointer: 730321837|17|10|1
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Total
+                                oc_name: Under 1.5
+                                oc_rate: 5.45
+                                oc_size: '1.5'
+                                oc_pointer: 730321837|17|10|1.5
+                                oc_block: false
+                                op_id: null
+                        - group_id: 119
+                          group_name: Who Will Score Goal
+                          columns: 1
+                          oc_list:
+                            - - oc_group_name: Who Will Score Goal
+                                oc_name: Erling Braut Haaland - Yes
+                                oc_rate: 1.53
+                                oc_size: '0.5'
+                                oc_pointer: 730321837|119|5869|0.5
+                                oc_block: false
+                                op_id: 133826394
+                              - oc_group_name: Who Will Score Goal
+                                oc_name: Antoine Semenyo - Yes
+                                oc_rate: 2.28
+                                oc_size: '0.5'
+                                oc_pointer: 730321837|119|5869|0.5
+                                oc_block: false
+                                op_id: 132268896
+                              - oc_group_name: Who Will Score Goal
+                                oc_name: Omar Marmoush - Yes
+                                oc_rate: 2.36
+                                oc_size: '0.5'
+                                oc_pointer: 730321837|119|5869|0.5
+                                oc_block: false
+                                op_id: 107049672
+                            - - oc_group_name: Who Will Score Goal
+                                oc_name: Juanlu Sanchez - No
+                                oc_rate: 1.004
+                                oc_size: '0.5'
+                                oc_pointer: 730321837|119|5870|0.5
+                                oc_block: false
+                                op_id: 108525580
+                              - oc_group_name: Who Will Score Goal
+                                oc_name: Abdukodir Khusanov - No
+                                oc_rate: 1.007
+                                oc_size: '0.5'
+                                oc_pointer: 730321837|119|5870|0.5
+                                oc_block: false
+                                op_id: 209297536
+                              - oc_group_name: Who Will Score Goal
+                                oc_name: Ruben Dias - No
+                                oc_rate: 1.007
+                                oc_size: '0.5'
+                                oc_pointer: 730321837|119|5870|0.5
+                                oc_block: false
+                                op_id: 54389713
+                      sport_id: 1
+                      sport_name: Football
+                      timer: 0
+                      score_full: 0:0
+                      score_period: ''
+                      stat_list: []
+                      extra_time: ''
+                      finale: false
+                      pitch: ''
+                      sub_games:
+                        - game_id: 730321838
+                          game_num: 192039
+                          game_name: 1st half
+                        - game_id: 730321839
+                          game_num: 192040
+                          game_name: 2nd half
+                        - game_id: 746013902
+                          game_num: 206688
+                          game_name: Corners
+                      event_plan: []
+                      period_name: ''
+                      game_desk: ''
+                      score_extra: ''
+                      game_dop_name: ''
+                      va: null
+                      vi: null
+                      zp: null
+                      game_plan: null
+                      stat_list_extra: []
+                gameIdFinished:
+                  summary: Match no longer available
+                  value:
+                    status: 1
+                    page: /v1/event
+                    body:
+                      message: Game id finished
+                gameNotFound:
+                  summary: Match not found
+                  value:
+                    status: 1
+                    page: /v1/event
+                    body:
+                      message: Game not found
+        default:
+          $ref: '#/components/responses/ApiError'
+  /v1/search/{type}/{lang}/{text}:
+    get:
+      tags:
+        - Matches
+      summary: Search matches by team or participant name
+      description: |-
+        Finds matches by a full or partial team or participant name, written in the language given by `lang`. Live and Prematch are searched separately. Returns a flat list of short summaries without odds; SportAPI determines the matches and their order. An empty `body` means nothing was found.
+
+        Run it in response to a user action; it does not need a background update loop.
+      operationId: searchMatches
+      externalDocs:
+        description: search — Match Search
+        url: https://sportapi.net/docs/sport-line/api-reference/search.html
+      parameters:
+        - $ref: '#/components/parameters/Type'
+        - $ref: '#/components/parameters/Lang'
+        - name: text
+          in: path
+          required: true
+          description: Full or partial team name, URL-encoded (for example `Manchester%20City`).
+          schema:
+            type: string
+            minLength: 1
+          example: Manchester
+      responses:
+        '200':
+          description: Matching matches.
+          headers:
+            X-Key-Expires:
+              $ref: '#/components/headers/X-Key-Expires'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+              examples:
+                live:
+                  summary: Live search for "Perth"
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/search
+                    body:
+                      - sgame_id: 69a6e9d05e99bd05c6f13963
+                        stat_id: 699986ec5e99bd05c6ea5357
+                        game_id: 746266480
+                        game_mid: 746266480
+                        game_start: 1787382000
+                        tournament_id: 980455
+                        tournament_name: Australia. NPL. Western Australia
+                        opp_1_name: Armadale
+                        opp_2_name: Perth RedStar
+                        opp_1_icon: 398cfbf18abf67a8a1a27bbe2fc0b250.png
+                        opp_2_icon: 1c1a28702cd883376ed2516e4b123de6.png
+                        sport_id: 1
+                        sport_name: Football
+                        score_full: 0:3
+                        period_name: period
+                        timer: 4501
+                        country_id: 4
+                        country_name: Australia
+                      - sgame_id: 69a6e9d25e99bd05c6f13975
+                        stat_id: 699986ec5e99bd05c6ea5357
+                        game_id: 746266481
+                        game_mid: 746266481
+                        game_start: 1787382000
+                        tournament_id: 980455
+                        tournament_name: Australia. NPL. Western Australia
+                        opp_1_name: Perth
+                        opp_2_name: Sorrento
+                        opp_1_icon: be4814791502d39f2de7bee35e685f19.png
+                        opp_2_icon: 698744afccc4b93b72b90cbeba71ac6c.png
+                        sport_id: 1
+                        sport_name: Football
+                        score_full: '2:0'
+                        period_name: period
+                        timer: 4452
+                        country_id: 4
+                        country_name: Australia
+                line:
+                  summary: Prematch search for "Manchester"
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/search
+                    body:
+                      - sgame_id: 6a35079e5e99bd05c63e9112
+                        stat_id: 6a34c3a75e99bd05c63e703a
+                        game_id: 730321837
+                        game_mid: 730321837
+                        game_start: 1787490000
+                        tournament_id: 88637
+                        tournament_name: England. Premier League
+                        opp_1_name: Manchester City
+                        opp_2_name: Bournemouth
+                        opp_1_icon: 57060f6368da70fbdfff37cb4b0280a5.png
+                        opp_2_icon: 75a114bd51430104bf8ea357f7ce003e.png
+                        sport_id: 1
+                        sport_name: Football
+                        score_full: 0:0
+                        period_name: ''
+                        timer: 0
+                        country_id: 231
+                        country_name: England
+                      - sgame_id: 6a35079e5e99bd05c63e9104
+                        stat_id: 6a34c3a75e99bd05c63e703a
+                        game_id: 730328424
+                        game_mid: 730328424
+                        game_start: 1787398200
+                        tournament_id: 88637
+                        tournament_name: England. Premier League
+                        opp_1_name: Hull City
+                        opp_2_name: Manchester United
+                        opp_1_icon: 715c2f5d95d5a5a03bdb4d4e11bbd696.png
+                        opp_2_icon: 1996.png
+                        sport_id: 1
+                        sport_name: Football
+                        score_full: 0:0
+                        period_name: ''
+                        timer: 0
+                        country_id: 231
+                        country_name: England
+                empty:
+                  summary: Nothing found
+                  value:
+                    status: 1
+                    page: /v1/search
+                    body: []
+        default:
+          $ref: '#/components/responses/ApiError'
+  /v1/sports/{type}/{lang}:
+    get:
+      tags:
+        - Navigation
+      summary: Sport list
+      description: |-
+        Returns only the available sports. The same data is at the top level of `menu`, which is recommended for most integrations; use this method for step-by-step loading (`sports → countries → tournaments → events`).
+
+        **Recommended request frequency:** Live — no more than once every 60 seconds; Prematch (`line`) — no more than once every 120 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).
+      operationId: getSports
+      externalDocs:
+        description: sports — Sport List
+        url: https://sportapi.net/docs/sport-line/api-reference/optional-methods/sports.html
+      parameters:
+        - $ref: '#/components/parameters/Type'
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/Cybersport'
+      responses:
+        '200':
+          description: Available sports.
+          headers:
+            X-Key-Expires:
+              $ref: '#/components/headers/X-Key-Expires'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SportsResponse'
+              examples:
+                live:
+                  summary: Live sports
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/sports
+                    body:
+                      - id: 1
+                        name: Football
+                        counter: 48
+                      - id: 2
+                        name: Ice Hockey
+                        counter: 16
+                      - id: 3
+                        name: Basketball
+                        counter: 22
+                      - id: 4
+                        name: Tennis
+                        counter: 32
+                      - id: 5
+                        name: Baseball
+                        counter: 11
+                line:
+                  summary: Prematch sports
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/sports
+                    body:
+                      - id: 1
+                        name: Football
+                        counter: 2568
+                      - id: 2
+                        name: Ice Hockey
+                        counter: 168
+                      - id: 3
+                        name: Basketball
+                        counter: 103
+                      - id: 4
+                        name: Tennis
+                        counter: 131
+                      - id: 5
+                        name: Baseball
+                        counter: 23
+        default:
+          $ref: '#/components/responses/ApiError'
+  /v1/countries/{sportId}/{type}/{lang}:
+    get:
+      tags:
+        - Navigation
+      summary: Country list for a sport
+      description: |-
+        Returns countries with available matches for one sport. The same countries are inside `menu`; use this method when countries are loaded only after a sport is selected.
+
+        **Recommended request frequency:** Live — no more than once every 60 seconds; Prematch (`line`) — no more than once every 120 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).
+      operationId: getCountries
+      externalDocs:
+        description: countries — Country List
+        url: https://sportapi.net/docs/sport-line/api-reference/optional-methods/countries.html
+      parameters:
+        - $ref: '#/components/parameters/SportId'
+        - $ref: '#/components/parameters/Type'
+        - $ref: '#/components/parameters/Lang'
+      responses:
+        '200':
+          description: Countries for the selected sport.
+          headers:
+            X-Key-Expires:
+              $ref: '#/components/headers/X-Key-Expires'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountriesResponse'
+              examples:
+                live:
+                  summary: Live football countries
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/countries
+                    body:
+                      - id: 2
+                        name: Ukraine
+                        sport_id: 1
+                        counter: 3
+                      - id: 4
+                        name: Australia
+                        sport_id: 1
+                        counter: 8
+                      - id: 9
+                        name: Angola
+                        sport_id: 1
+                        counter: 1
+                      - id: 22
+                        name: Belarus
+                        sport_id: 1
+                        counter: 1
+                line:
+                  summary: Prematch football countries
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/countries
+                    body:
+                      - id: 2
+                        name: Ukraine
+                        sport_id: 1
+                        counter: 16
+                      - id: 4
+                        name: Australia
+                        sport_id: 1
+                        counter: 104
+                      - id: 5
+                        name: Austria
+                        sport_id: 1
+                        counter: 45
+                      - id: 6
+                        name: Azerbaijan
+                        sport_id: 1
+                        counter: 6
+        default:
+          $ref: '#/components/responses/ApiError'
+  /v1/tournaments/{sportId}/{countryId}/{type}/{lang}:
+    get:
+      tags:
+        - Navigation
+      summary: Tournament list for a sport and country
+      description: |-
+        Returns tournaments with available matches for one sport and one country. The same tournaments are inside `menu`; use this method for step-by-step loading.
+
+        **Recommended request frequency:** Live — no more than once every 60 seconds; Prematch (`line`) — no more than once every 120 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).
+      operationId: getTournaments
+      externalDocs:
+        description: tournaments — Tournament List
+        url: https://sportapi.net/docs/sport-line/api-reference/optional-methods/tournaments.html
+      parameters:
+        - $ref: '#/components/parameters/SportId'
+        - $ref: '#/components/parameters/CountryId'
+        - $ref: '#/components/parameters/Type'
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/Cybersport'
+      responses:
+        '200':
+          description: Tournaments for the selected sport and country.
+          headers:
+            X-Key-Expires:
+              $ref: '#/components/headers/X-Key-Expires'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TournamentsResponse'
+              examples:
+                live:
+                  summary: Live football tournaments in Australia
+                  description: Shortened example from the documentation.
+                  value:
+                    status: 1
+                    page: /v1/tournaments
+                    body:
+                      - id: 1205475
+                        name: Australia. NPL Northern Territory
+                        counter: 1
+                        sport_id: 1
+                        countryId: 4
+                      - id: 1025049
+                        name: Australia. South Australia. State League
+                        counter: 1
+                        sport_id: 1
+                        countryId: 4
+                      - id: 1195579
+                        name: Australia. FFSA State League. Division 2
+                        counter: 1
+                        sport_id: 1
+                        countryId: 4
+                line:
+                  summary: Prematch football tournaments in Australia
+                  description: Shortened example from the documentation.
+                  value:
+                    status: 1
+                    page: /v1/tournaments
+                    body:
+                      - id: 149213
+                        name: Australia Cup
+                        counter: 2
+                        sport_id: 1
+                        countryId: 4
+                      - id: 2226303
+                        name: Australia. Queensland Cup. Women
+                        counter: 1
+                        sport_id: 1
+                        countryId: 4
+                      - id: 1025049
+                        name: Australia. South Australia. State League
+                        counter: 1
+                        sport_id: 1
+                        countryId: 4
+        default:
+          $ref: '#/components/responses/ApiError'
+  /v1/toplist/{sportId}/{lang}:
+    get:
+      tags:
+        - Top selections
+      summary: Top Prematch matches for one sport
+      description: |-
+        Returns a ready-made selection of up to 10 top Prematch matches for one sport (flat list). There is no `type` parameter: the method works with Prematch only — use `topmatches` for Live. SportAPI determines the contents and order.
+
+        **Recommended request frequency:** no more than once every 120 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).
+      operationId: getTopList
+      externalDocs:
+        description: toplist — Top Matches for a Sport
+        url: https://sportapi.net/docs/sport-line/api-reference/optional-methods/toplist.html
+      parameters:
+        - $ref: '#/components/parameters/SportId'
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/Full'
+        - $ref: '#/components/parameters/OddsWithFull'
+      responses:
+        '200':
+          description: 'Top matches: short summaries, or extended objects with `full=true`.'
+          headers:
+            X-Key-Expires:
+              $ref: '#/components/headers/X-Key-Expires'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopMatchesResponse'
+              examples:
+                short:
+                  summary: Short summaries (football)
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/toplist
+                    body:
+                      - sgame_id: 6a35079e5e99bd05c63e9104
+                        stat_id: 6a34c3a75e99bd05c63e703a
+                        game_id: 730328424
+                        game_mid: 730328424
+                        game_start: 1787398200
+                        tournament_name: England. Premier League
+                        opp_1_name: Hull City
+                        opp_2_name: Manchester United
+                        opp_1_icon: 715c2f5d95d5a5a03bdb4d4e11bbd696.png
+                        opp_2_icon: 1996.png
+                        sport_id: 1
+                        sport_name: Football
+                        score_full: 0:0
+                        period_name: ''
+                        timer: 0
+                        va: null
+                        vi: null
+                        zp: null
+                      - sgame_id: 6a24a7dd5e99bd05c636d2bf
+                        stat_id: 6a24a7dd5e99bd05c636d2d1
+                        game_id: 730330581
+                        game_mid: 730330581
+                        game_start: 1787416200
+                        tournament_name: Italy. Serie A
+                        opp_1_name: Internazionale Milano
+                        opp_2_name: Monza 1912
+                        opp_1_icon: 26e4a6de8e5461081e99ee9feda21a56.png
+                        opp_2_icon: 2f0d1152e896d9ead623347d79dd9e59.png
+                        sport_id: 1
+                        sport_name: Football
+                        score_full: 0:0
+                        period_name: ''
+                        timer: 0
+                        va: null
+                        vi: null
+                        zp: null
+                      - sgame_id: 6a4951625e99bd05c648553e
+                        stat_id: 6a44f21b5e99bd05c646499a
+                        game_id: 744308559
+                        game_mid: 744308559
+                        game_start: 1787427000
+                        tournament_name: Spain. La Liga
+                        opp_1_name: Espanyol
+                        opp_2_name: Real Madrid
+                        opp_1_icon: 24a303cdc0a24b99485aebc26ff13f55.png
+                        opp_2_icon: 65e3e972954419765c3ce21698edf6cb.png
+                        sport_id: 1
+                        sport_name: Football
+                        score_full: 0:0
+                        period_name: ''
+                        timer: 0
+                        va: null
+                        vi: null
+                        zp: null
+                full:
+                  summary: Extended objects, full=true (football)
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/toplist
+                    body:
+                      - sgame_id: 6a35079e5e99bd05c63e9104
+                        stat_id: 6a34c3a75e99bd05c63e703a
+                        game_id: 730328424
+                        game_mid: 730328424
+                        game_num: 194877
+                        game_start: 1787398200
+                        country_id: 231
+                        country_name: England
+                        tournament_id: 88637
+                        tournament_name: England. Premier League
+                        opp_1_name: Hull City
+                        opp_2_name: Manchester United
+                        opp_1_id: 2016
+                        opp_1_ids:
+                          - 2016
+                        opp_2_id: 1996
+                        opp_2_ids:
+                          - 1996
+                        opp_1_icon: 715c2f5d95d5a5a03bdb4d4e11bbd696.png
+                        opp_2_icon: 1996.png
+                        game_oc_counter: 1296
+                        game_oc_list:
+                          - group_id: 1
+                            group_name: 1X2
+                            columns: 3
+                            oc_list:
+                              - oc_group_name: 1X2
+                                oc_name: W1
+                                oc_rate: 9.45
+                                oc_size: 0
+                                oc_pointer: 730328424|1|1|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: 1X2
+                                oc_name: X
+                                oc_rate: 5.53
+                                oc_size: 0
+                                oc_pointer: 730328424|1|2|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: 1X2
+                                oc_name: W2
+                                oc_rate: 1.372
+                                oc_size: 0
+                                oc_pointer: 730328424|1|3|0
+                                oc_block: false
+                                op_id: null
+                          - group_id: 8
+                            group_name: Double Chance
+                            columns: 3
+                            oc_list:
+                              - oc_group_name: Double Chance
+                                oc_name: 1X
+                                oc_rate: 3.36
+                                oc_size: 0
+                                oc_pointer: 730328424|8|4|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Double Chance
+                                oc_name: '12'
+                                oc_rate: 1.183
+                                oc_size: 0
+                                oc_pointer: 730328424|8|5|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Double Chance
+                                oc_name: 2X
+                                oc_rate: 1.077
+                                oc_size: 0
+                                oc_pointer: 730328424|8|6|0
+                                oc_block: false
+                                op_id: null
+                        sport_id: 1
+                        sport_name: Football
+                        timer: 0
+                        score_full: 0:0
+                        score_period: ''
+                        stat_list: []
+                        extra_time: ''
+                        finale: false
+                        pitch: ''
+                        sub_games: []
+                        event_plan: []
+                        period_name: ''
+                        game_desk: ''
+                        score_extra: ''
+                        game_dop_name: ''
+                        va: null
+                        vi: null
+                        zp: null
+                        game_plan: null
+                        stat_list_extra: []
+                      - sgame_id: 6a24a7dd5e99bd05c636d2bf
+                        stat_id: 6a24a7dd5e99bd05c636d2d1
+                        game_id: 730330581
+                        game_mid: 730330581
+                        game_num: 198721
+                        game_start: 1787416200
+                        country_id: 79
+                        country_name: Italy
+                        tournament_id: 110163
+                        tournament_name: Italy. Serie A
+                        opp_1_name: Internazionale Milano
+                        opp_2_name: Monza 1912
+                        opp_1_id: 26495
+                        opp_1_ids:
+                          - 26495
+                        opp_2_id: 11105
+                        opp_2_ids:
+                          - 11105
+                        opp_1_icon: 26e4a6de8e5461081e99ee9feda21a56.png
+                        opp_2_icon: 2f0d1152e896d9ead623347d79dd9e59.png
+                        game_oc_counter: 1192
+                        game_oc_list:
+                          - group_id: 1
+                            group_name: 1X2
+                            columns: 3
+                            oc_list:
+                              - oc_group_name: 1X2
+                                oc_name: W1
+                                oc_rate: 1.209
+                                oc_size: 0
+                                oc_pointer: 730330581|1|1|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: 1X2
+                                oc_name: X
+                                oc_rate: 7.8
+                                oc_size: 0
+                                oc_pointer: 730330581|1|2|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: 1X2
+                                oc_name: W2
+                                oc_rate: 16.5
+                                oc_size: 0
+                                oc_pointer: 730330581|1|3|0
+                                oc_block: false
+                                op_id: null
+                          - group_id: 8
+                            group_name: Double Chance
+                            columns: 3
+                            oc_list:
+                              - oc_group_name: Double Chance
+                                oc_name: 1X
+                                oc_rate: 1.029
+                                oc_size: 0
+                                oc_pointer: 730330581|8|4|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Double Chance
+                                oc_name: '12'
+                                oc_rate: 1.113
+                                oc_size: 0
+                                oc_pointer: 730330581|8|5|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Double Chance
+                                oc_name: 2X
+                                oc_rate: 5.0
+                                oc_size: 0
+                                oc_pointer: 730330581|8|6|0
+                                oc_block: false
+                                op_id: null
+                        sport_id: 1
+                        sport_name: Football
+                        timer: 0
+                        score_full: 0:0
+                        score_period: ''
+                        stat_list: []
+                        extra_time: ''
+                        finale: false
+                        pitch: ''
+                        sub_games: []
+                        event_plan: []
+                        period_name: ''
+                        game_desk: ''
+                        score_extra: ''
+                        game_dop_name: ''
+                        va: null
+                        vi: null
+                        zp: null
+                        game_plan: null
+                        stat_list_extra: []
+        default:
+          $ref: '#/components/responses/ApiError'
+  /v1/topmatches/{type}/{lang}:
+    get:
+      tags:
+        - Top selections
+      summary: Top matches across all sports
+      description: |-
+        Returns a ready-made selection of up to 10 top matches across all sports available to the key — for a "Top Matches" block on a home page. Live and Prematch use separate selections. The response `page` is currently `/v1/topmathes` (sic).
+
+        **Recommended request frequency:** Live — no more than once every 30 seconds; Prematch (`line`) — no more than once every 120 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).
+      operationId: getTopMatches
+      externalDocs:
+        description: topmatches — Top Matches
+        url: https://sportapi.net/docs/sport-line/api-reference/optional-methods/topmatches.html
+      parameters:
+        - $ref: '#/components/parameters/Type'
+        - $ref: '#/components/parameters/Lang'
+        - $ref: '#/components/parameters/Full'
+        - $ref: '#/components/parameters/OddsWithFull'
+      responses:
+        '200':
+          description: 'Top matches: short summaries, or extended objects with `full=true`.'
+          headers:
+            X-Key-Expires:
+              $ref: '#/components/headers/X-Key-Expires'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopMatchesResponse'
+              examples:
+                liveShort:
+                  summary: Live, short summaries
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/topmathes
+                    body:
+                      - sgame_id: '0'
+                        stat_id: '0'
+                        game_id: 746267958
+                        game_mid: 746267958
+                        game_start: 1787382000
+                        tournament_name: Mobile Legends. MPL Indonesia
+                        opp_1_name: Team Liquid ID
+                        opp_2_name: Evos
+                        opp_1_icon: 2b86bbc5fe28202aaddb53e2fe651a46.png
+                        opp_2_icon: 459077.png
+                        sport_id: 40
+                        sport_name: Esports
+                        score_full: '1:0'
+                        period_name: 2 map
+                        timer: 0
+                        va: 1
+                        vi: '20072803'
+                        zp: null
+                      - sgame_id: 69a6e9d25e99bd05c6f13975
+                        stat_id: 699986ec5e99bd05c6ea5357
+                        game_id: 746266481
+                        game_mid: 746266481
+                        game_start: 1787382000
+                        tournament_name: Australia. NPL. Western Australia
+                        opp_1_name: Perth
+                        opp_2_name: Sorrento
+                        opp_1_icon: be4814791502d39f2de7bee35e685f19.png
+                        opp_2_icon: 698744afccc4b93b72b90cbeba71ac6c.png
+                        sport_id: 1
+                        sport_name: Football
+                        score_full: '1:0'
+                        period_name: 2nd half
+                        timer: 2982
+                        va: 1
+                        vi: DR_1_1783063687
+                        zp: 746266481
+                      - sgame_id: 69a6e9d05e99bd05c6f13963
+                        stat_id: 699986ec5e99bd05c6ea5357
+                        game_id: 746266480
+                        game_mid: 746266480
+                        game_start: 1787382000
+                        tournament_name: Australia. NPL. Western Australia
+                        opp_1_name: Armadale
+                        opp_2_name: Perth RedStar
+                        opp_1_icon: 398cfbf18abf67a8a1a27bbe2fc0b250.png
+                        opp_2_icon: 1c1a28702cd883376ed2516e4b123de6.png
+                        sport_id: 1
+                        sport_name: Football
+                        score_full: 0:2
+                        period_name: 2nd half
+                        timer: 3031
+                        va: 1
+                        vi: DR_1_1783063688
+                        zp: 746266480
+                lineShort:
+                  summary: Prematch, short summaries
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/topmathes
+                    body:
+                      - sgame_id: 6a35079e5e99bd05c63e9104
+                        stat_id: 6a34c3a75e99bd05c63e703a
+                        game_id: 730328424
+                        game_mid: 730328424
+                        game_start: 1787398200
+                        tournament_name: England. Premier League
+                        opp_1_name: Hull City
+                        opp_2_name: Manchester United
+                        opp_1_icon: 715c2f5d95d5a5a03bdb4d4e11bbd696.png
+                        opp_2_icon: 1996.png
+                        sport_id: 1
+                        sport_name: Football
+                        score_full: 0:0
+                        period_name: ''
+                        timer: 0
+                        va: null
+                        vi: null
+                        zp: null
+                      - sgame_id: 6a24a7dd5e99bd05c636d2bf
+                        stat_id: 6a24a7dd5e99bd05c636d2d1
+                        game_id: 730330581
+                        game_mid: 730330581
+                        game_start: 1787416200
+                        tournament_name: Italy. Serie A
+                        opp_1_name: Internazionale Milano
+                        opp_2_name: Monza 1912
+                        opp_1_icon: 26e4a6de8e5461081e99ee9feda21a56.png
+                        opp_2_icon: 2f0d1152e896d9ead623347d79dd9e59.png
+                        sport_id: 1
+                        sport_name: Football
+                        score_full: 0:0
+                        period_name: ''
+                        timer: 0
+                        va: null
+                        vi: null
+                        zp: null
+                      - sgame_id: 6a4951625e99bd05c648553e
+                        stat_id: 6a44f21b5e99bd05c646499a
+                        game_id: 744308559
+                        game_mid: 744308559
+                        game_start: 1787427000
+                        tournament_name: Spain. La Liga
+                        opp_1_name: Espanyol
+                        opp_2_name: Real Madrid
+                        opp_1_icon: 24a303cdc0a24b99485aebc26ff13f55.png
+                        opp_2_icon: 65e3e972954419765c3ce21698edf6cb.png
+                        sport_id: 1
+                        sport_name: Football
+                        score_full: 0:0
+                        period_name: ''
+                        timer: 0
+                        va: null
+                        vi: null
+                        zp: null
+                liveFull:
+                  summary: Live, extended objects (full=true)
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/topmathes
+                    body:
+                      - sgame_id: '0'
+                        stat_id: '0'
+                        game_id: 746267958
+                        game_mid: 746267958
+                        game_num: 180080
+                        game_start: 1787382000
+                        country_id: 225
+                        country_name: World
+                        tournament_id: 2360185
+                        tournament_name: Mobile Legends. MPL Indonesia
+                        opp_1_name: Team Liquid ID
+                        opp_2_name: Evos
+                        opp_1_id: 8806643
+                        opp_1_ids:
+                          - 8806643
+                        opp_2_id: 459077
+                        opp_2_ids:
+                          - 459077
+                        opp_1_icon: 2b86bbc5fe28202aaddb53e2fe651a46.png
+                        opp_2_icon: 459077.png
+                        game_oc_counter: 0
+                        game_oc_list: []
+                        sport_id: 40
+                        sport_name: Esports
+                        timer: 0
+                        score_full: '1:0'
+                        score_period: 12:9;1:4
+                        stat_list: []
+                        extra_time: ''
+                        finale: false
+                        pitch: ''
+                        sub_games: []
+                        event_plan: []
+                        period_name: 2 map
+                        game_desk: ''
+                        score_extra: ''
+                        game_dop_name: ''
+                        va: 1
+                        vi: '20072803'
+                        zp: null
+                        game_plan: null
+                        stat_list_extra: []
+                      - sgame_id: 69a6e9d25e99bd05c6f13975
+                        stat_id: 699986ec5e99bd05c6ea5357
+                        game_id: 746266481
+                        game_mid: 746266481
+                        game_num: 174204
+                        game_start: 1787382000
+                        country_id: 4
+                        country_name: Australia
+                        tournament_id: 980455
+                        tournament_name: Australia. NPL. Western Australia
+                        opp_1_name: Perth
+                        opp_2_name: Sorrento
+                        opp_1_id: 47103
+                        opp_1_ids:
+                          - 47103
+                        opp_2_id: 1804
+                        opp_2_ids:
+                          - 1804
+                        opp_1_icon: be4814791502d39f2de7bee35e685f19.png
+                        opp_2_icon: 698744afccc4b93b72b90cbeba71ac6c.png
+                        game_oc_counter: 331
+                        game_oc_list:
+                          - group_id: 1
+                            group_name: 1X2
+                            columns: 3
+                            oc_list:
+                              - oc_group_name: 1X2
+                                oc_name: W1
+                                oc_rate: 1.08
+                                oc_size: 0
+                                oc_pointer: 746266481|1|1|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: 1X2
+                                oc_name: X
+                                oc_rate: 10.1
+                                oc_size: 0
+                                oc_pointer: 746266481|1|2|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: 1X2
+                                oc_name: W2
+                                oc_rate: 23.0
+                                oc_size: 0
+                                oc_pointer: 746266481|1|3|0
+                                oc_block: false
+                                op_id: null
+                          - group_id: 8
+                            group_name: Double Chance
+                            columns: 3
+                            oc_list:
+                              - oc_group_name: Double Chance
+                                oc_name: 1X
+                                oc_rate: 1.001
+                                oc_size: 0
+                                oc_pointer: 746266481|8|4|0
+                                oc_block: true
+                                op_id: null
+                              - oc_group_name: Double Chance
+                                oc_name: '12'
+                                oc_rate: 1.035
+                                oc_size: 0
+                                oc_pointer: 746266481|8|5|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Double Chance
+                                oc_name: 2X
+                                oc_rate: 7.08
+                                oc_size: 0
+                                oc_pointer: 746266481|8|6|0
+                                oc_block: false
+                                op_id: null
+                        sport_id: 1
+                        sport_name: Football
+                        timer: 3012
+                        score_full: '1:0'
+                        score_period: 0:0;1:0
+                        stat_list:
+                          - id: 45
+                            name: Attacks
+                            opp1: '66'
+                            opp2: '46'
+                          - id: 58
+                            name: Dangerous attacks
+                            opp1: '56'
+                            opp2: '22'
+                          - id: 29
+                            name: Possession %
+                            opp1: '69'
+                            opp2: '31'
+                          - id: 59
+                            name: Shots on target
+                            opp1: '6'
+                            opp2: '2'
+                        extra_time: ''
+                        finale: false
+                        pitch: ''
+                        sub_games: []
+                        event_plan: []
+                        period_name: 2nd half
+                        game_desk: ''
+                        score_extra: ''
+                        game_dop_name: ''
+                        va: 1
+                        vi: DR_1_1783063687
+                        zp: 746266481
+                        game_plan: null
+                        stat_list_extra: []
+                lineFull:
+                  summary: Prematch, extended objects (full=true)
+                  description: 'Trimmed excerpt of a real English response: arrays are shortened, values
+                    are unchanged.'
+                  value:
+                    status: 1
+                    page: /v1/topmathes
+                    body:
+                      - sgame_id: 6a35079e5e99bd05c63e9104
+                        stat_id: 6a34c3a75e99bd05c63e703a
+                        game_id: 730328424
+                        game_mid: 730328424
+                        game_num: 194877
+                        game_start: 1787398200
+                        country_id: 231
+                        country_name: England
+                        tournament_id: 88637
+                        tournament_name: England. Premier League
+                        opp_1_name: Hull City
+                        opp_2_name: Manchester United
+                        opp_1_id: 2016
+                        opp_1_ids:
+                          - 2016
+                        opp_2_id: 1996
+                        opp_2_ids:
+                          - 1996
+                        opp_1_icon: 715c2f5d95d5a5a03bdb4d4e11bbd696.png
+                        opp_2_icon: 1996.png
+                        game_oc_counter: 1294
+                        game_oc_list:
+                          - group_id: 1
+                            group_name: 1X2
+                            columns: 3
+                            oc_list:
+                              - oc_group_name: 1X2
+                                oc_name: W1
+                                oc_rate: 9.45
+                                oc_size: 0
+                                oc_pointer: 730328424|1|1|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: 1X2
+                                oc_name: X
+                                oc_rate: 5.53
+                                oc_size: 0
+                                oc_pointer: 730328424|1|2|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: 1X2
+                                oc_name: W2
+                                oc_rate: 1.372
+                                oc_size: 0
+                                oc_pointer: 730328424|1|3|0
+                                oc_block: false
+                                op_id: null
+                          - group_id: 8
+                            group_name: Double Chance
+                            columns: 3
+                            oc_list:
+                              - oc_group_name: Double Chance
+                                oc_name: 1X
+                                oc_rate: 3.36
+                                oc_size: 0
+                                oc_pointer: 730328424|8|4|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Double Chance
+                                oc_name: '12'
+                                oc_rate: 1.183
+                                oc_size: 0
+                                oc_pointer: 730328424|8|5|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Double Chance
+                                oc_name: 2X
+                                oc_rate: 1.077
+                                oc_size: 0
+                                oc_pointer: 730328424|8|6|0
+                                oc_block: false
+                                op_id: null
+                        sport_id: 1
+                        sport_name: Football
+                        timer: 0
+                        score_full: 0:0
+                        score_period: ''
+                        stat_list: []
+                        extra_time: ''
+                        finale: false
+                        pitch: ''
+                        sub_games: []
+                        event_plan: []
+                        period_name: ''
+                        game_desk: ''
+                        score_extra: ''
+                        game_dop_name: ''
+                        va: null
+                        vi: null
+                        zp: null
+                        game_plan: null
+                        stat_list_extra: []
+                      - sgame_id: 6a24a7dd5e99bd05c636d2bf
+                        stat_id: 6a24a7dd5e99bd05c636d2d1
+                        game_id: 730330581
+                        game_mid: 730330581
+                        game_num: 198721
+                        game_start: 1787416200
+                        country_id: 79
+                        country_name: Italy
+                        tournament_id: 110163
+                        tournament_name: Italy. Serie A
+                        opp_1_name: Internazionale Milano
+                        opp_2_name: Monza 1912
+                        opp_1_id: 26495
+                        opp_1_ids:
+                          - 26495
+                        opp_2_id: 11105
+                        opp_2_ids:
+                          - 11105
+                        opp_1_icon: 26e4a6de8e5461081e99ee9feda21a56.png
+                        opp_2_icon: 2f0d1152e896d9ead623347d79dd9e59.png
+                        game_oc_counter: 1192
+                        game_oc_list:
+                          - group_id: 1
+                            group_name: 1X2
+                            columns: 3
+                            oc_list:
+                              - oc_group_name: 1X2
+                                oc_name: W1
+                                oc_rate: 1.209
+                                oc_size: 0
+                                oc_pointer: 730330581|1|1|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: 1X2
+                                oc_name: X
+                                oc_rate: 7.8
+                                oc_size: 0
+                                oc_pointer: 730330581|1|2|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: 1X2
+                                oc_name: W2
+                                oc_rate: 16.5
+                                oc_size: 0
+                                oc_pointer: 730330581|1|3|0
+                                oc_block: false
+                                op_id: null
+                          - group_id: 8
+                            group_name: Double Chance
+                            columns: 3
+                            oc_list:
+                              - oc_group_name: Double Chance
+                                oc_name: 1X
+                                oc_rate: 1.029
+                                oc_size: 0
+                                oc_pointer: 730330581|8|4|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Double Chance
+                                oc_name: '12'
+                                oc_rate: 1.113
+                                oc_size: 0
+                                oc_pointer: 730330581|8|5|0
+                                oc_block: false
+                                op_id: null
+                              - oc_group_name: Double Chance
+                                oc_name: 2X
+                                oc_rate: 5.0
+                                oc_size: 0
+                                oc_pointer: 730330581|8|6|0
+                                oc_block: false
+                                op_id: null
+                        sport_id: 1
+                        sport_name: Football
+                        timer: 0
+                        score_full: 0:0
+                        score_period: ''
+                        stat_list: []
+                        extra_time: ''
+                        finale: false
+                        pitch: ''
+                        sub_games: []
+                        event_plan: []
+                        period_name: ''
+                        game_desk: ''
+                        score_extra: ''
+                        game_dop_name: ''
+                        va: null
+                        vi: null
+                        zp: null
+                        game_plan: null
+                        stat_list_extra: []
+        default:
+          $ref: '#/components/responses/ApiError'
+  /v1/topchampionships/{type}/{lang}:
+    get:
+      tags:
+        - Top selections
+      summary: Popular championships
+      description: |-
+        Returns up to 12 of the most popular championships for Live or Prematch, without matches. Get a championship's matches with `events` using its `sport_id` and `tournament_id` and the same line type. Esports are not included; with a key limited to some sports, the list is built within them. Any other `type` value returns an empty list.
+
+        **Recommended request frequency:** Live — no more than once every 60 seconds; Prematch (`line`) — no more than once every 300 seconds. See [Data Update Guidelines](https://sportapi.net/docs/sport-line/getting-started/update-guidelines.html).
+      operationId: getTopChampionships
+      externalDocs:
+        description: topchampionships — Top Championships
+        url: https://sportapi.net/docs/sport-line/api-reference/optional-methods/topchampionships.html
+      parameters:
+        - $ref: '#/components/parameters/Type'
+        - $ref: '#/components/parameters/Lang'
+      responses:
+        '200':
+          description: Championships in order of popularity. May be empty.
+          headers:
+            X-Key-Expires:
+              $ref: '#/components/headers/X-Key-Expires'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopChampionshipsResponse'
+              examples:
+                line:
+                  summary: Prematch, key with basketball and baseball
+                  description: Example from the documentation.
+                  value:
+                    status: 1
+                    page: /v1/topchampionships
+                    body:
+                      - position: 1
+                        tournament_id: 166775
+                        tournament_name: USA. MLB
+                        sport_id: 5
+                        sport_name: Baseball
+                        country_id: 153
+                        country_name: United States
+                        counter: 4
+                      - position: 2
+                        tournament_id: 13589
+                        tournament_name: NBA
+                        sport_id: 3
+                        sport_name: Basketball
+                        country_id: 153
+                        country_name: United States
+                        counter: 41
+        default:
+          $ref: '#/components/responses/ApiError'
+  /v1/account:
+    get:
+      tags:
+        - Account
+      summary: The client's keys and access
+      description: 'Using **any** of the client''s keys, returns data for **all** of them: expiration
+        date, days left, available sports and languages, access restrictions, last use and requests for
+        the last 7 days. The key''s language list is convenient for a language switcher. Also returns
+        `your_ip` — the address this request came from. There are no parameters and no language in the
+        path.'
+      operationId: getAccount
+      externalDocs:
+        description: account — Client Keys and Access
+        url: https://sportapi.net/docs/sport-line/api-reference/optional-methods/account.html
+      parameters: []
+      responses:
+        '200':
+          description: Client and key data.
+          headers:
+            X-Key-Expires:
+              $ref: '#/components/headers/X-Key-Expires'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+              examples:
+                account:
+                  summary: Example from the documentation
+                  value:
+                    status: 1
+                    page: /v1/account
+                    body:
+                      client:
+                        public_id: f47ad380-39e2-4549-ac76-aa422df628ea
+                        name: Example
+                      your_ip: 203.0.113.7
+                      keys:
+                        - key: …c55f
+                          current: true
+                          type: test
+                          status: active
+                          label: demo 12 days
+                          starts_at: null
+                          expires_at: '2026-11-03T14:34:23.479Z'
+                          days_left: 30
+                          active: true
+                          sports: all
+                          languages:
+                            - ru
+                            - en
+                          last_used_at: '2026-10-04T15:20:07.843Z'
+                          access_mode: enforce
+                          allowed_ips:
+                            - 203.0.113.7
+                            - 198.51.100.0/24
+                          allowed_domains:
+                            - example.com
+                            - '*.example.com'
+                          usage_7d:
+                            - date: '2026-09-28'
+                              requests: 0
+                            - date: '2026-09-29'
+                              requests: 0
+                            - date: '2026-09-30'
+                              requests: 0
+                            - date: '2026-10-01'
+                              requests: 0
+                            - date: '2026-10-02'
+                              requests: 0
+                            - date: '2026-10-03'
+                              requests: 0
+                            - date: '2026-10-04'
+                              requests: 7
+        default:
+          $ref: '#/components/responses/ApiError'
+components:
+  securitySchemes:
+    PackageKey:
+      type: apiKey
+      in: header
+      name: Package
+      description: Personal API key issued by the SportAPI manager. Send it in the `Package` header with
+        every request; never put it in the URL. For public websites, call the API from your backend so
+        visitors cannot see the key. See [Authentication and Access](https://sportapi.net/docs/sport-line/getting-started/authentication-and-access.html).
+  parameters:
+    Type:
+      name: type
+      in: path
+      required: true
+      description: 'Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches.'
+      schema:
+        $ref: '#/components/schemas/LineType'
+      example: live
+    Lang:
+      name: lang
+      in: path
+      required: true
+      description: Language of names. Use the SportAPI code exactly as listed — some codes differ from
+        ISO (for example `ua`, `cn`, `br`, `al`). The language must also be included in the key's subscription.
+        See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html).
+      schema:
+        $ref: '#/components/schemas/LanguageCode'
+      example: en
+    SportId:
+      name: sportId
+      in: path
+      required: true
+      description: Sport ID taken from a current `menu` or `sports` response for the same line type. See
+        [Sports and `sport_id` Values](https://sportapi.net/docs/sport-line/reference/sports.html).
+      schema:
+        type: integer
+        format: int64
+      example: 1
+    CountryId:
+      name: countryId
+      in: path
+      required: true
+      description: Country ID taken from a current `menu` or `countries` response.
+      schema:
+        type: integer
+        format: int64
+      example: 4
+    TournamentId:
+      name: tournamentId
+      in: path
+      required: true
+      description: Tournament ID taken from a current `menu` or `tournaments` response. Pass `0` to get
+        matches from all available tournaments of the sport.
+      schema:
+        type: integer
+        format: int64
+        minimum: 0
+      example: 0
+    EventsFormat:
+      name: format
+      in: path
+      required: true
+      description: Response format. `events` supports only `sub`, which groups matches by tournament.
+      schema:
+        type: string
+        enum:
+          - sub
+      example: sub
+    Count:
+      name: count
+      in: path
+      required: true
+      description: 'Legacy segment kept for URL compatibility. Always pass `50`: the value does not affect
+        the response and must not be used for pagination.'
+      schema:
+        type: integer
+      example: 50
+    GameId:
+      name: gameId
+      in: path
+      required: true
+      description: Match or sub-match ID (`game_id`) from `events` or `sub_games`, requested with the
+        same line type it was obtained from.
+      schema:
+        type: integer
+        format: int64
+      example: 746146992
+    Cybersport:
+      name: cybersport
+      in: query
+      required: false
+      description: '`true` switches the method to esports data.'
+      schema:
+        type: boolean
+        default: false
+    Odds:
+      name: odds
+      in: query
+      required: false
+      description: '`false` returns matches without `game_oc_list`; all other fields are the same and
+        `game_oc_counter` is kept. The response is several times smaller.'
+      schema:
+        type: boolean
+        default: true
+    Full:
+      name: full
+      in: query
+      required: false
+      description: '`true` returns extended match objects (teams, country, tournament and a **short**
+        odds list) instead of short summaries. It does not return the full odds list — use `event` for
+        that.'
+      schema:
+        type: boolean
+        default: false
+    OddsWithFull:
+      name: odds
+      in: query
+      required: false
+      description: 'Only matters together with `full=true`: `full=true&odds=false` returns the extended
+        match objects without `game_oc_list`.'
+      schema:
+        type: boolean
+        default: true
+  headers:
+    X-Key-Expires:
+      description: Expiration date of the key sent in the request (ISO 8601, UTC). Present in every successful
+        response.
+      schema:
+        type: string
+        format: date-time
+      example: '2026-11-03T14:34:23.479Z'
+  responses:
+    ApiError:
+      description: Access or parameter error (`error_code` + `error_message`). The documentation does
+        not define the HTTP status codes of error responses, so always check the parsed JSON for `error_code`.
+        See [Error Handling](https://sportapi.net/docs/sport-line/getting-started/error-handling.html).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            missingPackage:
+              summary: Missing Package header
+              description: The key was not sent in the `Package` header.
+              value:
+                error_code: 100
+                error_message: Missing Package header
+            invalidPackage:
+              summary: Invalid Package
+              description: The key was not found.
+              value:
+                error_code: 100
+                error_message: Invalid Package
+            expired:
+              summary: Package has expired
+              description: The key expired or access was disabled.
+              value:
+                error_code: 100
+                error_message: Package has expired
+            blocked:
+              summary: Package is blocked
+              description: The key is temporarily paused.
+              value:
+                error_code: 100
+                error_message: Package is blocked
+            notActiveYet:
+              summary: Package is not active yet
+              description: The key's access period has not started.
+              value:
+                error_code: 100
+                error_message: Package is not active yet
+            ipNotAllowed:
+              summary: Request from a non-allowed IP
+              description: The key is restricted to other IP addresses or websites (`Access from site
+                … is not allowed for this Package` for browser requests).
+              value:
+                error_code: 100
+                error_message: Access from IP 203.0.113.50 is not allowed for this Package
+            accessDenied:
+              summary: Access denied
+              description: The key does not give access to the requested data or sport.
+              value:
+                error_code: 100
+                error_message: Access denied
+            languageNotInPackage:
+              summary: Language not in subscription
+              description: The language exists but is not included in the key's subscription.
+              value:
+                error_code: 100
+                error_message: The language is not available in your package.
+            invalidLanguage:
+              summary: Invalid language
+              description: The language code is not supported.
+              value:
+                error_code: 100
+                error_message: Invalid language
+            wrongType:
+              summary: Wrong line type
+              description: Returned explicitly by `search`; other methods may return an empty response
+                for an invalid line type.
+              value:
+                error_code: 90
+                error_message: Wrong data type (accept only live or line)
+  schemas:
+    LineType:
+      type: string
+      description: 'Sports line type: `live` — matches in progress, `line` — upcoming Prematch matches.'
+      enum:
+        - live
+        - line
+    LanguageCode:
+      type: string
+      description: SportAPI language code (69 languages). Some codes are internal SportAPI codes and do
+        not match ISO codes. See [Languages and Language Codes](https://sportapi.net/docs/sport-line/reference/languages.html).
+      enum:
+        - al
+        - aa
+        - ar
+        - hy
+        - az
+        - bn
+        - bs
+        - bg
+        - my
+        - ca
+        - hk
+        - cn
+        - tw
+        - hr
+        - cs
+        - da
+        - nl
+        - en
+        - et
+        - fi
+        - fr
+        - ka
+        - de
+        - el
+        - ht
+        - he
+        - hi
+        - hu
+        - is
+        - id
+        - it
+        - ja
+        - kz
+        - km
+        - ko
+        - ne
+        - ku
+        - lo
+        - lv
+        - ln
+        - lt
+        - mk
+        - ms
+        - mn
+        - sd
+        - nb
+        - fa
+        - pl
+        - pt
+        - br
+        - ro
+        - ru
+        - sr
+        - si
+        - sk
+        - sl
+        - so
+        - es
+        - mx
+        - sw
+        - tl
+        - tj
+        - th
+        - tr
+        - ua
+        - ur
+        - uz
+        - vi
+        - zu
+    ResponseStatus:
+      type: integer
+      description: 'Response generation status. Confirmed successful responses return `1`. `status: 1`
+        does not guarantee that `body` contains data — always inspect `body`.'
+      example: 1
+    ResponsePage:
+      type: string
+      description: 'Name of the method that generated the response, for diagnostics only. Do not use it
+        to build URLs. Note: `topmatches` currently returns `/v1/topmathes`.'
+      example: /v1/menu
+    ErrorResponse:
+      type: object
+      description: Access or parameter error. Returned without `status`, `page` or `body`. Use `error_code`
+        and `error_message` for handling. See [Error Handling](https://sportapi.net/docs/sport-line/getting-started/error-handling.html).
+      required:
+        - error_code
+        - error_message
+      properties:
+        error_code:
+          type: integer
+          description: Numeric error category code, for example `100` (access) or `90` (wrong line type).
+          example: 100
+        error_message:
+          type: string
+          description: Text describing the cause.
+          example: Invalid Package
+    Sport:
+      type: object
+      description: 'A sport. Returned by `sports`. Standard SportAPI icons are available by ID: `https://cdn.sportapi.net/sports/v1/color/{sportId}.webp`,
+        `https://cdn.sportapi.net/flags/v1/color/{countryId}.webp`, `https://cdn.sportapi.net/tournaments/v1/color/{tournamentId}.webp`.
+        See [SportAPI Icons and Media Assets](https://sportapi.net/docs/sport-line/reference/media-assets.html).'
+      required:
+        - id
+        - name
+        - counter
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Sport ID. Used as `sportId` in other method URLs.
+          example: 1
+        name:
+          type: string
+          description: Sport name in the requested language.
+          example: Football
+        counter:
+          type: integer
+          minimum: 0
+          description: Number of available matches for this sport.
+    Country:
+      type: object
+      description: A country for the selected sport. Returned by `countries`.
+      required:
+        - id
+        - name
+        - sport_id
+        - counter
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Country ID. Used as `countryId` in other method URLs.
+          example: 4
+        name:
+          type: string
+          description: Country name in the requested language.
+          example: Australia
+        sport_id:
+          type: integer
+          format: int64
+          description: ID of the sport for which the country was returned. Note the JSON name `sport_id`.
+        counter:
+          type: integer
+          minimum: 0
+          description: Number of available matches for the selected sport in this country.
+    Tournament:
+      type: object
+      description: 'A tournament in navigation methods (`tournaments` and inside `menu`). Note the exact
+        JSON names: `sport_id`, but `countryId` with an uppercase `I`.'
+      required:
+        - id
+        - name
+        - counter
+        - sport_id
+        - countryId
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Tournament ID. Used as `tournamentId` in other method URLs.
+          example: 149213
+        name:
+          type: string
+          description: Tournament name in the requested language. The API may occasionally return an empty
+            string — do not invent a name from other fields.
+        counter:
+          type: integer
+          minimum: 0
+          description: Number of available matches in this tournament.
+        sport_id:
+          type: integer
+          format: int64
+          description: ID of the tournament's sport.
+        countryId:
+          type: integer
+          format: int64
+          description: ID of the tournament's country.
+    MenuCountry:
+      type: object
+      description: A country inside a `menu` sport (`body[].sub[]`).
+      required:
+        - id
+        - name
+        - counter
+        - sport_id
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Country ID. Used as `countryId` in other method URLs.
+        name:
+          type: string
+          description: Country name in the requested language.
+        counter:
+          type: integer
+          minimum: 0
+          description: Number of available matches across all tournaments of this country.
+        sport_id:
+          type: integer
+          format: int64
+          description: ID of the sport associated with the country.
+        sub:
+          type: array
+          description: Available tournaments in this country.
+          items:
+            $ref: '#/components/schemas/Tournament'
+    MenuSport:
+      type: object
+      description: 'A sport at the top level of `menu`, with nested countries and tournaments. Standard
+        SportAPI icons are available by ID: `https://cdn.sportapi.net/sports/v1/color/{sportId}.webp`,
+        `https://cdn.sportapi.net/flags/v1/color/{countryId}.webp`, `https://cdn.sportapi.net/tournaments/v1/color/{tournamentId}.webp`.
+        See [SportAPI Icons and Media Assets](https://sportapi.net/docs/sport-line/reference/media-assets.html).'
+      required:
+        - id
+        - name
+        - counter
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Sport ID. Used as `sportId` in other method URLs.
+        name:
+          type: string
+          description: Sport name in the requested language.
+        counter:
+          type: integer
+          minimum: 0
+          description: Total number of available matches for this sport.
+        sub:
+          type: array
+          description: Countries with available matches for this sport.
+          items:
+            $ref: '#/components/schemas/MenuCountry'
+    OcSize:
+      description: Handicap, total or another selection parameter; usually `0` for selections without
+        a separate value. Both JSON types occur in real responses (`0`, `"2.5"`, `"-0.25"`), so support
+        both.
+      oneOf:
+        - type: number
+        - type: string
+      example: '2.5'
+    Outcome:
+      type: object
+      description: One betting selection (outcome) with its current odds. See [Odds and Betting Markets](https://sportapi.net/docs/sport-line/data-models/odds.html).
+      required:
+        - oc_name
+        - oc_rate
+        - oc_pointer
+      properties:
+        oc_group_name:
+          type: string
+          description: Betting market name in the requested language. Not a technical ID.
+          example: 1X2
+        oc_name:
+          type: string
+          description: Ready-to-display selection name in the requested language.
+          example: W1
+        oc_rate:
+          type: number
+          description: Current decimal odds. Not an identifier.
+          example: 1.525
+        oc_size:
+          $ref: '#/components/schemas/OcSize'
+        oc_pointer:
+          type: string
+          description: 'Primary composite code of the selection. Treat it as an opaque string: store it
+            in full, compare the complete value and pass it unchanged to the bet placement system ([bet
+            pointer](https://sportapi.net/docs/coupon/bet-placement/bet-pointer.html)). For player-specific
+            selections also store `op_id`.'
+          example: 730321837|1|1|0
+        oc_block:
+          type: boolean
+          description: '`true` — the selection is blocked and unavailable; `false` — available. Re-check
+            on every update.'
+        op_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Player or participant ID for a player-specific selection; `null` otherwise.
+    ShortMarket:
+      type: object
+      description: A betting market in the short odds list of `events`, `topmatches?full=true` and `toplist?full=true`.
+        `oc_list` is a flat array of selections. The set of markets depends on the sport — do not build
+        the interface only around `1X2`. See [Odds and Betting Markets](https://sportapi.net/docs/sport-line/data-models/odds.html).
+      properties:
+        group_id:
+          type: integer
+          format: int64
+          description: Technical betting market ID.
+          example: 1
+        group_name:
+          type: string
+          description: Market name in the requested language.
+          example: 1X2
+        columns:
+          type: integer
+          description: Recommended number of display columns.
+          example: 3
+        oc_list:
+          type: array
+          description: Selections and odds in the market.
+          items:
+            $ref: '#/components/schemas/Outcome'
+    GroupedMarket:
+      type: object
+      description: A betting market in the `event` (`group` format) response. `oc_list` is an array of
+        columns; each column is an array of selections, already sorted by the API. Preserve the order
+        of markets, columns and selections. See [Odds and Betting Markets](https://sportapi.net/docs/sport-line/data-models/odds.html).
+      properties:
+        group_id:
+          type: integer
+          format: int64
+          description: Technical betting market ID.
+          example: 17
+        group_name:
+          type: string
+          description: Market name in the requested language.
+          example: Total
+        columns:
+          type: integer
+          description: Recommended number of display columns. It does not have to equal the number of
+            nested arrays.
+          example: 2
+        oc_list:
+          type: array
+          description: Selection columns of the market.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Outcome'
+    StatEntry:
+      type: object
+      description: One Live statistic. Values are strings even when numeric; a missing statistic is unknown,
+        not zero. See [Live Statistics](https://sportapi.net/docs/sport-line/data-models/live-statistics.html).
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Technical statistic ID — use it to match statistics programmatically.
+          example: 45
+        name:
+          type: string
+          description: Statistic name in the requested language.
+          example: Attacks
+        opp1:
+          type: string
+          description: Value for the first side (`opp_1_name`).
+          example: '61'
+        opp2:
+          type: string
+          description: Value for the second side (`opp_2_name`).
+          example: '54'
+    SubGame:
+      type: object
+      description: 'Link to a sub-match (half, corners, cards, player statistics and so on). It contains
+        no odds: request `event` with its `game_id`. See [Sub-events](https://sportapi.net/docs/sport-line/data-models/sub-events.html).'
+      properties:
+        game_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Sub-match ID for a separate `event` request.
+        game_num:
+          type: integer
+          format: int64
+          nullable: true
+          deprecated: true
+          description: Legacy service field, scheduled for removal.
+        game_name:
+          type: string
+          nullable: true
+          description: Sub-match name in the requested language.
+    EventPlanEntry:
+      type: object
+      description: 'One pair of teams inside a group match (`event_plan`). Not a link to a sub-match:
+        it has no `game_id`.'
+      properties:
+        opp_1_name:
+          type: string
+          description: Team on the home side.
+        opp_2_name:
+          type: string
+          description: Team on the away side.
+        opp_1_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Home-side team ID.
+        opp_2_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Away-side team ID.
+        opp_1_country_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Country ID of the home-side team.
+        opp_2_country_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: Country ID of the away-side team.
+        opp_1_icon:
+          type: string
+          description: Home-side team icon file name.
+        opp_2_icon:
+          type: string
+          description: Away-side team icon file name.
+        opp_1_date:
+          type: integer
+          format: int64
+          nullable: true
+          description: Date and time associated with the home-side team, Unix timestamp.
+        opp_2_date:
+          type: integer
+          format: int64
+          nullable: true
+          description: Date and time associated with the away-side team, Unix timestamp.
+        game_start:
+          type: integer
+          format: int64
+          nullable: true
+          description: Start time of this pair's meeting, Unix timestamp.
+    MatchCore:
+      type: object
+      description: Fields shared by match objects in `events`, `event` and the extended (`full=true`)
+        `topmatches`/`toplist` responses. In Prematch many Live fields hold default values (`0`, empty
+        string, empty array or `null`). See [Match](https://sportapi.net/docs/sport-line/data-models/match.html)
+        and [Field Reference](https://sportapi.net/docs/sport-line/data-models/field-reference.html).
+      required:
+        - game_id
+      properties:
+        game_id:
+          type: integer
+          format: int64
+          description: Match ID, used to request `event`. A new `game_id` is generated when a match moves
+            from Prematch to Live — do not link Prematch and Live by this field.
+          example: 746146992
+        game_mid:
+          type: integer
+          format: int64
+          nullable: true
+          description: Main match ID. Equals `game_id` for a main match; points to the main match for
+            a sub-match.
+        sgame_id:
+          type: string
+          description: Reserved test field. Not currently used by the API.
+        stat_id:
+          type: string
+          description: Reserved test field. Not currently used by the API.
+        game_num:
+          type: integer
+          format: int64
+          deprecated: true
+          description: Legacy unused field, scheduled for removal from the API.
+        game_start:
+          type: integer
+          format: int64
+          description: Match start time, Unix timestamp in seconds.
+          example: 1787338800
+        sport_id:
+          type: integer
+          format: int64
+          description: Sport ID.
+        sport_name:
+          type: string
+          description: Sport name in the requested language.
+        country_id:
+          type: integer
+          format: int64
+          description: Country ID.
+        country_name:
+          type: string
+          description: Country name in the requested language.
+        tournament_id:
+          type: integer
+          format: int64
+          description: Tournament ID.
+        tournament_name:
+          type: string
+          description: Tournament name in the requested language.
+        game_dop_name:
+          type: string
+          description: Sub-match type name, such as `Corners`; empty for a main match.
+        game_desk:
+          type: string
+          description: Game segment type, such as `Half`, `Set` or `Quarter`.
+        opp_1_name:
+          type: string
+          description: First team or participant.
+        opp_2_name:
+          type: string
+          description: Second team or participant.
+        opp_1_id:
+          type: integer
+          format: int64
+          description: Primary ID of the first team or participant.
+        opp_2_id:
+          type: integer
+          format: int64
+          description: Primary ID of the second team or participant.
+        opp_1_ids:
+          type: array
+          description: Participant IDs of the first side when it has several players or teams (for example
+            tennis doubles).
+          items:
+            type: integer
+            format: int64
+        opp_2_ids:
+          type: array
+          description: Participant IDs of the second side when it has several players or teams.
+          items:
+            type: integer
+            format: int64
+        opp_1_icon:
+          type: string
+          description: Icon file name, for example `8bd073a686a067e6732d8d1688a517c0.png`. Remove the
+            extension and insert the remaining name into `https://cdn.sportapi.net/opp/v1/color/{iconName}.webp`.
+        opp_2_icon:
+          type: string
+          description: Icon file name, for example `8bd073a686a067e6732d8d1688a517c0.png`. Remove the
+            extension and insert the remaining name into `https://cdn.sportapi.net/opp/v1/color/{iconName}.webp`.
+        game_oc_counter:
+          type: integer
+          minimum: 0
+          description: Total number of available selections for the match. Kept when `odds=false`.
+        timer:
+          type: integer
+          description: Match timer in seconds (divide by 60 for minutes). Usually `0` in Prematch.
+        score_full:
+          type: string
+          description: Current overall score, for example `"1:0"`.
+        score_period:
+          type: string
+          description: Score by period or for the current segment. May be an empty string.
+        score_extra:
+          type: string
+          description: Tennis game score, such as `0:15`, or an empty string.
+        period_name:
+          type: string
+          description: Current period name. Usually an empty string in Prematch.
+        extra_time:
+          type: string
+          description: Added minutes, for example `+10`, or an empty string.
+        finale:
+          type: boolean
+          nullable: true
+          description: Indicates that the match has ended. Not available for every match.
+        pitch:
+          type: string
+          description: ID of the serving participant in applicable sports, or an empty string.
+        stat_list:
+          type: array
+          description: Main Live statistics. Populated only in Live `events` and `event`; may be empty.
+          items:
+            $ref: '#/components/schemas/StatEntry'
+        stat_list_extra:
+          type: array
+          description: Reserved test field. Not currently used.
+          items: {}
+        sub_games:
+          type: array
+          description: Sub-match links. Populated only in `event`; returned as `[]` elsewhere.
+          items:
+            $ref: '#/components/schemas/SubGame'
+        event_plan:
+          type: array
+          description: Team pairs of a group match. Populated only in `event`; returned as `[]` elsewhere.
+          items:
+            $ref: '#/components/schemas/EventPlanEntry'
+        game_plan:
+          description: Reserved test field (any JSON value or `null`). Not currently used.
+        va:
+          type: integer
+          nullable: true
+          description: '`1` — video is available; `null` — not available. `0` is not used. See [Video
+            Streaming](https://sportapi.net/docs/sport-line/additional-services/video-streaming.html).'
+        vi:
+          type: string
+          nullable: true
+          description: Live video stream ID (not a URL), or `null`.
+        zp:
+          type: integer
+          format: int64
+          nullable: true
+          description: Live 3D Tracker ID, passed to the tracker as `gameid`; `null` — tracker unavailable.
+            See [Live 3D Tracker](https://sportapi.net/docs/sport-line/additional-services/live-3d-tracker.html).
+    MatchListItem:
+      description: Match object in `events` and in extended (`full=true`) `topmatches`/`toplist` responses,
+        with a short list of the main markets.
+      allOf:
+        - $ref: '#/components/schemas/MatchCore'
+        - type: object
+          properties:
+            game_oc_list:
+              type: array
+              description: Short list of the main markets and best odds. Absent when `odds=false`.
+              items:
+                $ref: '#/components/schemas/ShortMarket'
+    MatchDetail:
+      description: Detailed match or sub-match object returned by `event`, with the complete market list.
+      allOf:
+        - $ref: '#/components/schemas/MatchCore'
+        - type: object
+          properties:
+            game_oc_list:
+              type: array
+              description: Complete available market list in the `group` format. Absent when `odds=false`.
+              items:
+                $ref: '#/components/schemas/GroupedMarket'
+    EventMessage:
+      type: object
+      description: State of a specific match returned inside a successful envelope instead of a match
+        object. `Game id finished` does not tell why the match disappeared (moved to Live with a new `game_id`,
+        cancelled, or removed) — stop requesting the old `game_id` and refresh `events`.
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: Game id finished
+    MatchSummary:
+      type: object
+      description: Short match summary without odds, returned by `search` and by `topmatches`/`toplist`
+        without `full=true`. `search` items include `tournament_id`, `country_id` and `country_name`;
+        `topmatches`/`toplist` summaries include `va`, `vi` and `zp` instead. Request `event` with `game_id`
+        for full data.
+      required:
+        - game_id
+      properties:
+        sgame_id:
+          type: string
+          description: Reserved test field. Not currently used by the API.
+        stat_id:
+          type: string
+          description: Reserved test field. Not currently used by the API.
+        game_id:
+          type: integer
+          format: int64
+          description: Match ID for requesting `event`.
+        game_mid:
+          type: integer
+          format: int64
+          nullable: true
+          description: Main match ID.
+        game_start:
+          type: integer
+          format: int64
+          description: Start time, Unix timestamp in seconds.
+        tournament_id:
+          type: integer
+          format: int64
+          description: Tournament ID (`search` only).
+        tournament_name:
+          type: string
+          description: Tournament name in the requested language.
+        opp_1_name:
+          type: string
+          description: First team or participant.
+        opp_2_name:
+          type: string
+          description: Second team or participant.
+        opp_1_icon:
+          type: string
+          description: Icon file name, for example `8bd073a686a067e6732d8d1688a517c0.png`. Remove the
+            extension and insert the remaining name into `https://cdn.sportapi.net/opp/v1/color/{iconName}.webp`.
+        opp_2_icon:
+          type: string
+          description: Icon file name, for example `8bd073a686a067e6732d8d1688a517c0.png`. Remove the
+            extension and insert the remaining name into `https://cdn.sportapi.net/opp/v1/color/{iconName}.webp`.
+        sport_id:
+          type: integer
+          format: int64
+          description: Sport ID.
+        sport_name:
+          type: string
+          description: Sport name in the requested language.
+        score_full:
+          type: string
+          description: Current score. Prematch usually returns `0:0`.
+        period_name:
+          type: string
+          description: Current Live period. Prematch returns an empty string.
+        timer:
+          type: integer
+          description: Live timer in seconds. Prematch usually returns `0`.
+        country_id:
+          type: integer
+          format: int64
+          description: Country ID (`search` only).
+        country_name:
+          type: string
+          description: Country name in the requested language (`search` only).
+        va:
+          type: integer
+          nullable: true
+          description: '`1` — video is available; `null` — not available.'
+        vi:
+          type: string
+          nullable: true
+          description: Live video stream ID, or `null`.
+        zp:
+          type: integer
+          format: int64
+          nullable: true
+          description: Live 3D Tracker ID, or `null`.
+    EventsTournament:
+      type: object
+      description: A tournament with its matches in the `events` response.
+      properties:
+        tournament_id:
+          type: integer
+          format: int64
+          description: Tournament ID.
+        tournament_name:
+          type: string
+          description: Tournament name in the requested language.
+        events_list:
+          type: array
+          description: Matches of this tournament.
+          items:
+            $ref: '#/components/schemas/MatchListItem'
+    TopChampionship:
+      type: object
+      description: A popular championship returned by `topchampionships` (without matches).
+      properties:
+        position:
+          type: integer
+          description: 'Place in the list: `1`, `2`, …'
+        tournament_id:
+          type: integer
+          format: int64
+          description: Championship ID. Used as `tournamentId` in `events`.
+        tournament_name:
+          type: string
+          description: Championship name in the requested language.
+        sport_id:
+          type: integer
+          format: int64
+          description: Sport ID.
+        sport_name:
+          type: string
+          description: Sport name in the requested language.
+        country_id:
+          type: integer
+          format: int64
+          description: Country or region ID.
+        country_name:
+          type: string
+          description: Country or region name in the requested language.
+        counter:
+          type: integer
+          minimum: 0
+          description: 'Number of matches: in Prematch — in the whole line; in Live — in progress now.'
+    AccountKeyUsage:
+      type: object
+      description: Successful requests on one day (UTC).
+      properties:
+        date:
+          type: string
+          format: date
+          example: '2026-10-04'
+        requests:
+          type: integer
+          minimum: 0
+          example: 7
+    AccountKey:
+      type: object
+      description: One of the client's keys. Revoked keys are not included.
+      properties:
+        key:
+          type: string
+          description: The last 4 characters of the key. The full key is never returned.
+          example: …c55f
+        current:
+          type: boolean
+          description: '`true` — the key used for this request.'
+        type:
+          type: string
+          description: '`test` — test key, `prod` — production key.'
+          enum:
+            - test
+            - prod
+        status:
+          type: string
+          description: '`active` — active, `paused` — paused.'
+          enum:
+            - active
+            - paused
+        label:
+          type: string
+          nullable: true
+          description: Key label, for example "site 1" or "mirror".
+        starts_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Start of the access period (ISO 8601, UTC); `null` — active since issue.
+        expires_at:
+          type: string
+          format: date-time
+          description: End of the access period (ISO 8601, UTC).
+        days_left:
+          type: integer
+          minimum: 0
+          description: Days left, rounded up; `0` — expired.
+        active:
+          type: boolean
+          description: 'The key works now: status `active`, the period has started and not expired.'
+        sports:
+          description: '`"all"` — all sports of the line; otherwise a list of sport IDs.'
+          oneOf:
+            - type: string
+              enum:
+                - all
+            - type: array
+              items:
+                type: integer
+                format: int64
+        languages:
+          type: array
+          description: Languages available with the key in the line — suitable for a language switcher.
+          items:
+            type: string
+        last_used_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Time of the last request with the key (UTC), updated once a minute; `null` — never
+            used.
+        access_mode:
+          type: string
+          description: 'Access restriction: `off` — from anywhere; `monitor` — from anywhere, sources
+            are checked without denial; `enforce` — only from allowed IP addresses or websites.'
+          enum:
+            - 'off'
+            - monitor
+            - enforce
+        allowed_ips:
+          type: array
+          description: Allowed IP addresses and subnets, for example `198.51.100.0/24`.
+          items:
+            type: string
+        allowed_domains:
+          type: array
+          description: 'Allowed websites for browser requests: `example.com` or `*.example.com`.'
+          items:
+            type: string
+        usage_7d:
+          type: array
+          description: Successful requests per day (UTC) for the last 7 days; today is the last element.
+          items:
+            $ref: '#/components/schemas/AccountKeyUsage'
+    Account:
+      type: object
+      description: 'The client''s access: data for all keys of the client, returned using any of them.'
+      properties:
+        client:
+          type: object
+          properties:
+            public_id:
+              type: string
+              description: Client identifier.
+            name:
+              type: string
+              description: Client name.
+        your_ip:
+          type: string
+          description: The IP address this request came from. Send it to the manager to restrict the key
+            by IP.
+          example: 203.0.113.7
+        keys:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountKey'
+    MenuResponse:
+      type: object
+      description: '`menu` response.'
+      required:
+        - status
+        - page
+        - body
+      properties:
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+        page:
+          $ref: '#/components/schemas/ResponsePage'
+        body:
+          type: array
+          description: Available sports.
+          items:
+            $ref: '#/components/schemas/MenuSport'
+    SportsResponse:
+      type: object
+      description: '`sports` response.'
+      required:
+        - status
+        - page
+        - body
+      properties:
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+        page:
+          $ref: '#/components/schemas/ResponsePage'
+        body:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sport'
+    CountriesResponse:
+      type: object
+      description: '`countries` response.'
+      required:
+        - status
+        - page
+        - body
+      properties:
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+        page:
+          $ref: '#/components/schemas/ResponsePage'
+        body:
+          type: array
+          items:
+            $ref: '#/components/schemas/Country'
+    TournamentsResponse:
+      type: object
+      description: '`tournaments` response.'
+      required:
+        - status
+        - page
+        - body
+      properties:
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+        page:
+          $ref: '#/components/schemas/ResponsePage'
+        body:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tournament'
+    EventsResponse:
+      type: object
+      description: '`events` response: tournaments with nested match lists. An empty array means no matches
+        for the conditions.'
+      required:
+        - status
+        - page
+        - body
+      properties:
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+        page:
+          $ref: '#/components/schemas/ResponsePage'
+        body:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventsTournament'
+    EventResponse:
+      type: object
+      description: '`event` response: one match object, or a service message in `body.message`.'
+      required:
+        - status
+        - page
+        - body
+      properties:
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+        page:
+          $ref: '#/components/schemas/ResponsePage'
+        body:
+          oneOf:
+            - $ref: '#/components/schemas/MatchDetail'
+            - $ref: '#/components/schemas/EventMessage'
+    SearchResponse:
+      type: object
+      description: '`search` response: a flat list of matching matches. An empty array means nothing was
+        found.'
+      required:
+        - status
+        - page
+        - body
+      properties:
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+        page:
+          $ref: '#/components/schemas/ResponsePage'
+        body:
+          type: array
+          items:
+            $ref: '#/components/schemas/MatchSummary'
+    TopMatchesResponse:
+      type: object
+      description: '`topmatches` / `toplist` response: a flat match list (up to 10). Short summaries by
+        default, extended match objects with `full=true`.'
+      required:
+        - status
+        - page
+        - body
+      properties:
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+        page:
+          $ref: '#/components/schemas/ResponsePage'
+        body:
+          type: array
+          description: Short summaries (`MatchSummary`) by default; extended objects (`MatchListItem`)
+            with `full=true`.
+          items:
+            anyOf:
+              - $ref: '#/components/schemas/MatchSummary'
+              - $ref: '#/components/schemas/MatchListItem'
+    TopChampionshipsResponse:
+      type: object
+      description: '`topchampionships` response. May be empty.'
+      required:
+        - status
+        - page
+        - body
+      properties:
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+        page:
+          $ref: '#/components/schemas/ResponsePage'
+        body:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopChampionship'
+    AccountResponse:
+      type: object
+      description: '`account` response.'
+      required:
+        - status
+        - page
+        - body
+      properties:
+        status:
+          $ref: '#/components/schemas/ResponseStatus'
+        page:
+          $ref: '#/components/schemas/ResponsePage'
+        body:
+          $ref: '#/components/schemas/Account'
