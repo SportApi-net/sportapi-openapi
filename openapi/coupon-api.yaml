@@ -54,6 +54,11 @@ info:
   contact:
     name: SportAPI
     url: https://sportapi.net
+    email: Suport@sportapi.net
+  termsOfService: https://sportapi.net/rules.html
+  x-logo:
+    url: https://sportapi.net/assets/img/favicons/android-chrome-512x512.png
+    altText: SportAPI
   license:
     name: MIT (this specification document)
     url: https://opensource.org/licenses/MIT
